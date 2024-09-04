@@ -1,10 +1,7 @@
-import { signIn, signOut } from "@/auth"
-import { auth } from "@/auth"
+import { signIn, signOut, auth } from "@/auth"
  
 export default async function SignIn() {
     const session = await auth()
-
-    console.log('Full session object:', JSON.stringify(session, null, 2));
 
     if (!session?.user) {
         return (
