@@ -26,8 +26,9 @@ model User {
  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  createdInvites Invite[]
 }
- 
+
 model Account {
   userId            String
   type              String
@@ -48,7 +49,7 @@ model Account {
  
   @@id([provider, providerAccountId])
 }
- 
+
 model Session {
   sessionToken String   @unique
   userId       String
@@ -58,7 +59,7 @@ model Session {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
- 
+
 model VerificationToken {
   identifier String
   token      String
@@ -66,7 +67,7 @@ model VerificationToken {
  
   @@id([identifier, token])
 }
- 
+
 // Optional for WebAuthn support
 model Authenticator {
   credentialID         String  @unique
@@ -87,6 +88,21 @@ model Family {
   id        String   @id @default(cuid())
   name      String   @unique
   members   User[]
+  invites   Invite[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Invite {
+  id         String   @id @default(cuid())
+  email      String
+  role       String
+  family     Family   @relation(fields: [familyId], references: [id])
+  familyId   String
+  createdBy  User     @relation(fields: [createdById], references: [id])
+  createdById String
+  createdAt  DateTime @default(now())
+  status     String   @default("PENDING") // PENDING, ACCEPTED, REJECTED
+
+  @@unique([email, familyId])
 }

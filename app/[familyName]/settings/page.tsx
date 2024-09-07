@@ -2,6 +2,8 @@ import { auth } from '@/auth';
 import { PrismaClient } from "@prisma/client"
 import { redirect } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import InviteMemberForm from '@/components/InviteMemberForm';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const prisma = new PrismaClient()
 
@@ -17,6 +19,13 @@ export default async function Page({ params }: { params: { familyName: string } 
     redirect('/');
   }
   const user = family.members.find(member => member.email === session?.user?.email);
+
+  // Fetch invites for this family
+  const invites = await prisma.invite.findMany({
+    where: { familyId: family.id },
+    include: { createdBy: true },
+    orderBy: { createdAt: 'desc' }
+  });
 
   return (
     <div className="p-4">
@@ -47,6 +56,36 @@ export default async function Page({ params }: { params: { familyName: string } 
               </li>
             ))}
           </ul>
+        </CardContent>
+        <CardContent>
+          <h2 className="text-lg font-semibold mb-4">Invite New Family Member</h2>
+          <InviteMemberForm familyName={params.familyName} />
+        </CardContent>
+
+        <CardContent>
+          <h2 className="text-lg font-semibold mb-4">Family Invites</h2>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Email</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Invited By</TableHead>
+                <TableHead>Invited At</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {invites.map((invite) => (
+                <TableRow key={invite.id}>
+                  <TableCell>{invite.email}</TableCell>
+                  <TableCell>{invite.role}</TableCell>
+                  <TableCell>{invite.status}</TableCell>
+                  <TableCell>{invite.createdBy.name || invite.createdBy.email}</TableCell>
+                  <TableCell>{new Date(invite.createdAt).toLocaleString()}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>
