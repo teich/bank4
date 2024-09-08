@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { auth } from "@/auth" // Referring to the auth.ts we just created
 
 const prisma = new PrismaClient();
 
 export async function POST(request: Request) {
-  const { inviteId, userId } = await request.json();
+  const session = await auth();
+  const { inviteId } = await request.json();
 
+console.log("inviteId", inviteId)
+console.log("session", session)
   try {
     const invite = await prisma.invite.findUnique({
       where: { id: inviteId },
@@ -18,7 +22,7 @@ export async function POST(request: Request) {
 
     await prisma.$transaction([
       prisma.user.update({
-        where: { id: userId },
+        where: { id: session?.user?.id },
         data: {
           familyId: invite.familyId,
           role: invite.role,
