@@ -29,6 +29,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Not member of this family" }, { status: 403 })
     }
 
+    const isParent = user?.role === 'PARENT';
+    if (!isParent) {
+      return NextResponse.json({ error: "Only parents can invite new members" }, { status: 403 })
+    }
+
     const invite = await prisma.invite.create({
       data: {
         email: body.email,

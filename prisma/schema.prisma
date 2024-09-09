@@ -104,5 +104,5 @@ model Invite {
   createdAt  DateTime @default(now())
   status     String   @default("PENDING") // PENDING, ACCEPTED, REJECTED
 
-  @@unique([email, familyId])
+  @@unique([email, familyId, createdAt])
 }

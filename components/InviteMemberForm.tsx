@@ -55,8 +55,8 @@ export default function InviteMemberForm({ familyName }: { familyName: string })
             <SelectValue placeholder="Select a role" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="Parent">Parent</SelectItem>
-            <SelectItem value="Child">Child</SelectItem>
+            <SelectItem value="Parent">PARENT</SelectItem>
+            <SelectItem value="Child">CHILD</SelectItem>
           </SelectContent>
         </Select>
       </div>
