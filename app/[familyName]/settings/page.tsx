@@ -2,6 +2,9 @@ import { auth } from '@/auth';
 import { PrismaClient } from "@prisma/client"
 import { redirect } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import InviteMemberForm from '@/components/InviteMemberForm';
+import FamilyInvites from '@/components/FamilyInvites';
+import FamilyMembersList from '@/components/FamilyMembersList';
 
 const prisma = new PrismaClient()
 
@@ -17,6 +20,18 @@ export default async function Page({ params }: { params: { familyName: string } 
     redirect('/');
   }
   const user = family.members.find(member => member.email === session?.user?.email);
+
+  // Fetch invites for this family
+  const invites = await prisma.invite.findMany({
+    where: { 
+      familyId: family.id,
+      status: { not: 'DELETED' } // Only fetch non-deleted invites
+    },
+    include: { createdBy: true },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  const isParent = user?.role === 'PARENT';
 
   return (
     <div className="p-4">
@@ -38,16 +53,25 @@ export default async function Page({ params }: { params: { familyName: string } 
         </CardContent>
         <CardContent>
           <h2 className="text-lg font-semibold">Family Members</h2>
-          <ul>
-            {family.members.map(member => (
-              <li key={member.id} className="mb-2">
-                <p><strong>Name:</strong> {member.name}</p>
-                <p><strong>Email:</strong> {member.email}</p>
-                <p><strong>Role:</strong> {member.role}</p>
-              </li>
-            ))}
-          </ul>
+          <FamilyMembersList 
+            members={family.members.map(m => ({ ...m, role: m.role || 'UNKNOWN' }))}
+            currentUserEmail={session?.user?.email || ''} 
+            isParent={isParent}
+          />
         </CardContent>
+        
+        {isParent && (
+          <CardContent>
+            <h2 className="text-lg font-semibold mb-4">Invite New Family Member</h2>
+            <InviteMemberForm familyName={params.familyName} />
+          </CardContent>
+        )}
+
+        {isParent && (
+          <CardContent>
+            <FamilyInvites invites={invites} />
+          </CardContent>
+        )}
       </Card>
     </div>
   );
