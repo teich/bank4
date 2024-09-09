@@ -28,7 +28,8 @@ export default async function Page({ params }: { params: { familyName: string } 
       status: { not: 'DELETED' } // Only fetch non-deleted invites
     },
     include: { createdBy: true },
-    orderBy: { createdAt: 'desc' }
+    orderBy: { createdAt: 'desc' },
+    distinct: ['email'],
   });
 
   const isParent = user?.role === 'PARENT';
