@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { inviteFamilyMember } from './actions';
 
 export default function InviteMemberForm({ familyName }: { familyName: string }) {
   const [email, setEmail] = useState('');
@@ -14,20 +15,15 @@ export default function InviteMemberForm({ familyName }: { familyName: string })
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/invite-family', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, role, familyName }),
-      });
+      const result = await inviteFamilyMember({ email, role, familyName });
 
-      if (response.ok) {
+      if (result.success) {
         alert('Invite sent successfully');
         setEmail('');
         setRole('');
         router.refresh();
       } else {
-        const data = await response.json();
-        alert(`Error: ${data.message}`);
+        alert(`Error: ${result.message}`);
       }
     } catch (error) {
       console.error('Error sending invite:', error);

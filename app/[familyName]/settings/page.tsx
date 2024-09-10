@@ -1,12 +1,10 @@
 import { auth } from '@/auth';
-import { PrismaClient } from "@prisma/client"
+import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import InviteMemberForm from '@/components/InviteMemberForm';
-import FamilyInvites from '@/components/FamilyInvites';
-import FamilyMembersList from '@/app/components/FamilyMembersList';
-
-const prisma = new PrismaClient()
+import InviteMemberForm from '@/app/[familyName]/settings/InviteMemberForm';
+import FamilyInvites from '@/app/[familyName]/settings/FamilyInvites';
+import FamilyMembersList from '@/app/[familyName]/settings/FamilyMembersList';
 
 export default async function Page({ params }: { params: { familyName: string } }) {
   const session = await auth();

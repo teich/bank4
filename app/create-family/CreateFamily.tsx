@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import debounce from 'lodash/debounce'
+import { checkFamilyName, createFamily } from './actions'
 
 export default function CreateFamily() {
   const [familyName, setFamilyName] = useState('')
@@ -14,7 +15,7 @@ export default function CreateFamily() {
   const [isChecking, setIsChecking] = useState(false)
   const router = useRouter()
 
-  const checkFamilyName = useCallback(
+  const debouncedCheckFamilyName = useCallback(
     debounce(async (name: string) => {
       if (name.length === 0) {
         setIsAvailable(false)
@@ -22,30 +23,22 @@ export default function CreateFamily() {
         return
       }
       setIsChecking(true)
-      const response = await fetch(`/api/check-family-name?name=${encodeURIComponent(name)}`)
-      const data = await response.json()
-      setIsAvailable(data.isAvailable)
+      const isAvailable = await checkFamilyName(name)
+      setIsAvailable(isAvailable)
       setIsChecking(false)
     }, 300),
     []
   )
 
   useEffect(() => {
-    checkFamilyName(familyName)
-  }, [familyName, checkFamilyName])
+    debouncedCheckFamilyName(familyName)
+  }, [familyName, debouncedCheckFamilyName])
 
-  const createFamily = async (e: React.FormEvent) => {
+  const handleCreateFamily = async (e: React.FormEvent) => {
     e.preventDefault()
     if (isAvailable) {
-      const response = await fetch('/api/create-family', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ familyName }),
-      })
-      console.log("step 1,", familyName)
-      const data = await response.json()
-      console.log("step 2")
-      if (data.success) {
+      const success = await createFamily(familyName)
+      if (success) {
         router.push(`/${familyName}/settings`)
       }
     }
@@ -56,7 +49,7 @@ export default function CreateFamily() {
       <CardHeader>
         <CardTitle>Create Family</CardTitle>
       </CardHeader>
-      <form onSubmit={createFamily}>
+      <form onSubmit={handleCreateFamily}>
         <CardContent>
           <div className="grid w-full items-center gap-4">
             <div className="flex flex-col space-y-1.5">

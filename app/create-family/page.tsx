@@ -1,4 +1,4 @@
-import CreateFamily from '@/components/CreateFamily'
+import CreateFamily from './CreateFamily'
 
 export default function CreateFamilyPage() {
   return (
