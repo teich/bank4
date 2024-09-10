@@ -1,7 +1,7 @@
 import { auth } from '@/auth';
 import { PrismaClient } from "@prisma/client";
 import Link from 'next/link';
-import InvitationList from '@/components/InvitationList';
+import InvitationList from '@/app/[familyName]/settings/InvitationList';
 
 export default async function Home() {
   const prisma = new PrismaClient();
