@@ -1,14 +1,12 @@
 'use client'
 
 import { useState } from 'react';
-import { Role } from '@prisma/client';
+import { acceptInvite, declineInvite } from './actions';
 
 interface Invite {
   id: string;
-  family: {
-    name: string;
-  };
-  role: Role;
+  role: string;
+  family: { name: string };
 }
 
 interface InvitationListProps {
@@ -19,32 +17,20 @@ export default function InvitationList({ invites }: InvitationListProps) {
   const [pendingInvites, setPendingInvites] = useState(invites);
 
   const handleAcceptInvite = async (inviteId: string) => {
-    const response = await fetch(`/api/accept-invite`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ inviteId }),
-    });
-    if (response.ok) {
+    const result = await acceptInvite(inviteId);
+    if (result.success) {
       setPendingInvites(pendingInvites.filter(invite => invite.id !== inviteId));
     } else {
-      console.error('Failed to accept invite');
+      console.error('Failed to accept invite:', result.message);
     }
   };
 
   const handleDeclineInvite = async (inviteId: string) => {
-    const response = await fetch(`/api/decline-invite`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ inviteId }),
-    });
-    if (response.ok) {
+    const result = await declineInvite(inviteId);
+    if (result.success) {
       setPendingInvites(pendingInvites.filter(invite => invite.id !== inviteId));
     } else {
-      console.error('Failed to decline invite');
+      console.error('Failed to decline invite:', result.message);
     }
   };
 

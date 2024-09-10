@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react';
+import { deleteInvite } from './actions';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { FaTrash } from 'react-icons/fa'; // Make sure to install react-icons if you haven't
 
@@ -24,20 +25,15 @@ export default function FamilyInvites({ invites: initialInvites }: FamilyInvites
   const [invites, setInvites] = useState(initialInvites);
 
   const handleDeleteInvite = async (inviteId: string) => {
-    const response = await fetch('/api/delete-invite', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ inviteId }),
-    });
+    const result = await deleteInvite(inviteId);
 
-    if (response.ok) {
+    if (result.success) {
       setInvites(invites.map(invite => 
         invite.id === inviteId ? { ...invite, status: 'DELETED' } : invite
       ));
     } else {
-      console.error('Failed to delete invite');
+      console.error('Failed to delete invite:', result.message);
+      // Optionally, show an error message to the user
     }
   };
 

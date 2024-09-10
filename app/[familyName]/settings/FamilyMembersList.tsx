@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
+import { deleteFamilyMember } from './actions';
 
 interface FamilyMember {
   id: string;
@@ -23,19 +24,13 @@ export default function FamilyMembersList({ members, currentUserEmail, isParent,
   const handleDeleteMember = async (memberId: string) => {
     if (confirm('Are you sure you want to remove this family member?')) {
       try {
-        const response = await fetch('/api/delete-family-member', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ memberId, familyId }),
-        });
+        const result = await deleteFamilyMember(memberId, familyId);
 
-        if (!response.ok) {
-          throw new Error('Failed to delete family member');
+        if (result.success) {
+          setFamilyMembers(familyMembers.filter(member => member.id !== memberId));
+        } else {
+          throw new Error(result.message || 'Failed to delete family member');
         }
-
-        setFamilyMembers(familyMembers.filter(member => member.id !== memberId));
       } catch (error) {
         console.error('Error deleting family member:', error);
         // Handle error (e.g., show error message to user)
