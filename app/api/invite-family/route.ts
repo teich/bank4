@@ -1,51 +1,57 @@
-import { PrismaClient } from '@prisma/client';
-import { NextResponse } from "next/server"
+import { NextResponse } from 'next/server';
+import { PrismaClient, Role } from '@prisma/client';
 import { auth } from "@/auth"
 
 const prisma = new PrismaClient();
 
 export async function POST(request: Request) {
+	const session = await auth();
+	if (!session?.user?.id) {
+		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+	}
 
-  const session = await auth();
+	try {
+		const { email, role, familyName } = await request.json();
 
-  if (!session || !session.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+		// Validate role
+    const upperRole = role.toUpperCase();
+		if (upperRole !== 'PARENT' && upperRole !== 'CHILD') {
+			console.log('Invalid role:', role);
+			return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
+		}
 
-  const body = await request.json()
+		// Find the family
+		const family = await prisma.family.findUnique({
+			where: { name: familyName },
+			include: { members: true },
+		});
 
-  try {
-    const family = await prisma.family.findUnique({
-      where: { name: body.familyName },
-      include: { members: true },
-    });
+		if (!family) {
+			return NextResponse.json({ error: 'Family not found' }, { status: 404 });
+		}
 
-    if (!family) {
-      return NextResponse.json({ error: "Family Not Found" }, { status: 404 })
-    }
+		// Check if the current user is a parent in this family
+		const isParent = session.user && family.members.some(member => 
+			member.userId === session?.user?.id && member.role === 'PARENT'
+		);
 
-    const user = family.members.find(member => member.email === session.user?.email);
-    if (!user) {
-      return NextResponse.json({ error: "Not member of this family" }, { status: 403 })
-    }
+		if (!isParent) {
+			return NextResponse.json({ error: 'Only parents can send invites' }, { status: 403 });
+		}
 
-    const isParent = user?.role === 'PARENT';
-    if (!isParent) {
-      return NextResponse.json({ error: "Only parents can invite new members" }, { status: 403 })
-    }
+		// Create the invite
+		const invite = await prisma.invite.create({
+			data: {
+				email,
+				role: upperRole as Role,
+				family: { connect: { id: family.id } },
+				createdBy: { connect: { id: session.user.id } },
+			},
+		});
 
-    const invite = await prisma.invite.create({
-      data: {
-        email: body.email,
-        role: body.role,
-        family: { connect: { id: family.id } },
-        createdBy: { connect: { id: user.id } },
-      },
-    });
-
-    return NextResponse.json({ message: "Invite Created Sucessfully" }, { status: 201 })
-  } catch (error) {
-    console.error('Error creating invite:', error);
-    return NextResponse.json({ message: "error creating invite" }, { status: 500 })
-  }
+		return NextResponse.json({ success: true, invite });
+	} catch (error) {
+		console.error('Error creating invite:', error);
+		return NextResponse.json({ error: 'Failed to create invite' }, { status: 500 });
+	}
 }

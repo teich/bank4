@@ -20,13 +20,11 @@ model User {
   sessions      Session[]
   // Optional for WebAuthn support
   Authenticator Authenticator[]
-  role          String?         // Add this line to store the user's role
-  family        Family?         @relation(fields: [familyId], references: [id])
-  familyId      String?         // Add this line for the foreign key
+  familyMembers FamilyMember[]  // New relation
+  createdInvites Invite[]
  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  createdInvites Invite[]
 }
 
 model Account {
@@ -87,7 +85,7 @@ model Authenticator {
 model Family {
   id        String   @id @default(cuid())
   name      String   @unique
-  members   User[]
+  members   FamilyMember[] // Changed from User[] to FamilyMember[]
   invites   Invite[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -96,7 +94,7 @@ model Family {
 model Invite {
   id         String   @id @default(cuid())
   email      String
-  role       String
+  role       Role
   family     Family   @relation(fields: [familyId], references: [id])
   familyId   String
   createdBy  User     @relation(fields: [createdById], references: [id])
@@ -105,4 +103,20 @@ model Invite {
   status     String   @default("PENDING") // PENDING, ACCEPTED, REJECTED
 
   @@unique([email, familyId, createdAt])
+}
+
+model FamilyMember {
+  id       String @id @default(cuid())
+  user     User   @relation(fields: [userId], references: [id])
+  userId   String
+  family   Family @relation(fields: [familyId], references: [id])
+  familyId String
+  role     Role
+
+  @@unique([userId, familyId])
+}
+
+enum Role {
+  PARENT
+  CHILD
 }

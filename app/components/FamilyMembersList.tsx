@@ -14,24 +14,32 @@ interface FamilyMembersListProps {
   members: FamilyMember[];
   currentUserEmail: string;
   isParent: boolean;
+  familyId: string;
 }
 
-export default function FamilyMembersList({ members, currentUserEmail, isParent }: FamilyMembersListProps) {
+export default function FamilyMembersList({ members, currentUserEmail, isParent, familyId }: FamilyMembersListProps) {
   const [familyMembers, setFamilyMembers] = useState(members);
 
   const handleDeleteMember = async (memberId: string) => {
-    const response = await fetch('/api/delete-family-member', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ memberId }),
-    });
+    if (confirm('Are you sure you want to remove this family member?')) {
+      try {
+        const response = await fetch('/api/delete-family-member', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ memberId, familyId }),
+        });
 
-    if (response.ok) {
-      setFamilyMembers(familyMembers.filter(member => member.id !== memberId));
-    } else {
-      console.error('Failed to delete family member');
+        if (!response.ok) {
+          throw new Error('Failed to delete family member');
+        }
+
+        setFamilyMembers(familyMembers.filter(member => member.id !== memberId));
+      } catch (error) {
+        console.error('Error deleting family member:', error);
+        // Handle error (e.g., show error message to user)
+      }
     }
   };
 

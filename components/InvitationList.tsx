@@ -1,13 +1,14 @@
 'use client'
 
 import { useState } from 'react';
+import { Role } from '@prisma/client';
 
 interface Invite {
   id: string;
   family: {
     name: string;
   };
-  role: string;
+  role: Role;
 }
 
 interface InvitationListProps {

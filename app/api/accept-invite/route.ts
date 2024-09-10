@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Role } from '@prisma/client';
 import { auth } from "@/auth" // Referring to the auth.ts we just created
 
 const prisma = new PrismaClient();
@@ -8,8 +8,10 @@ export async function POST(request: Request) {
   const session = await auth();
   const { inviteId } = await request.json();
 
-console.log("inviteId", inviteId)
-console.log("session", session)
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const invite = await prisma.invite.findUnique({
       where: { id: inviteId },
@@ -21,11 +23,11 @@ console.log("session", session)
     }
 
     await prisma.$transaction([
-      prisma.user.update({
-        where: { id: session?.user?.id },
+      prisma.familyMember.create({
         data: {
-          familyId: invite.familyId,
-          role: invite.role,
+          user: { connect: { id: session.user.id } },
+          family: { connect: { id: invite.familyId } },
+          role: invite.role as Role,
         },
       }),
       prisma.invite.update({

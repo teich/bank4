@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import InviteMemberForm from '@/components/InviteMemberForm';
 import FamilyInvites from '@/components/FamilyInvites';
-import FamilyMembersList from '@/components/FamilyMembersList';
+import FamilyMembersList from '@/app/components/FamilyMembersList';
 
 const prisma = new PrismaClient()
 
@@ -13,13 +13,17 @@ export default async function Page({ params }: { params: { familyName: string } 
 
   // check if user is in family, if not, redirect to home  
   const family = await prisma.family.findUnique({
-    where: { name: params.familyName, },
-    include: { members: true, },
+    where: { name: params.familyName },
+    include: { 
+      members: {
+        include: { user: true }
+      },
+    },
   });
-  if (!family || !family.members.some(member => member.email === session?.user?.email)) {
+  if (!family || !family.members.some(member => member.user.email === session?.user?.email)) {
     redirect('/');
   }
-  const user = family.members.find(member => member.email === session?.user?.email);
+  const familyMember = family.members.find(member => member.user.email === session?.user?.email);
 
   // Fetch invites for this family
   const invites = await prisma.invite.findMany({
@@ -32,7 +36,7 @@ export default async function Page({ params }: { params: { familyName: string } 
     distinct: ['email'],
   });
 
-  const isParent = user?.role === 'PARENT';
+  const isParent = familyMember?.role === 'PARENT';
 
   return (
     <div className="p-4">
@@ -42,9 +46,9 @@ export default async function Page({ params }: { params: { familyName: string } 
         </CardHeader>
         <CardContent>
           <h2 className="text-lg font-semibold">User Information</h2>
-          <p><strong>Name:</strong> {user?.name ?? 'N/A'}</p>
-          <p><strong>Email:</strong> {user?.email ?? 'N/A'}</p>
-          <p><strong>Role:</strong> {user?.role ?? 'N/A'}</p>
+          <p><strong>Name:</strong> {familyMember?.user.name ?? 'N/A'}</p>
+          <p><strong>Email:</strong> {familyMember?.user.email ?? 'N/A'}</p>
+          <p><strong>Role:</strong> {familyMember?.role ?? 'N/A'}</p>
         </CardContent>
         <CardContent>
           <h2 className="text-lg font-semibold">Family Information</h2>
@@ -55,9 +59,10 @@ export default async function Page({ params }: { params: { familyName: string } 
         <CardContent>
           <h2 className="text-lg font-semibold">Family Members</h2>
           <FamilyMembersList 
-            members={family.members.map(m => ({ ...m, role: m.role || 'UNKNOWN' }))}
+            members={family.members.map(m => ({ ...m.user, role: m.role }))}
             currentUserEmail={session?.user?.email || ''} 
             isParent={isParent}
+            familyId={family.id} // Make sure you're passing the familyId here
           />
         </CardContent>
         

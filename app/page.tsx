@@ -15,7 +15,11 @@ export default async function Home() {
   const user = await prisma.user.findUnique({
     where: { email: userEmail },
     include: { 
-      family: true,
+      familyMembers: {
+        include: {
+          family: true
+        }
+      },
       createdInvites: true
     },
   });
@@ -37,17 +41,22 @@ export default async function Home() {
 
   return (
     <div>
-      <h1>Your Family</h1>
-      {user.family ? (
+      <h1>Your Families</h1>
+      {user.familyMembers.length > 0 ? (
         <ul>
-          <li key={user.family.id}>
-            <Link href={`/${user.family.name}/settings`}>
-              {user.family.name}
-            </Link>
-          </li>
+          {user.familyMembers.map(familyMember => (
+            <li key={familyMember.family.id}>
+              <Link href={`/${familyMember.family.name}/settings`}>
+                {familyMember.family.name} - Role: {familyMember.role}
+              </Link>
+            </li>
+          ))}
         </ul>
       ) : (
-        <p>You are not a member of any family yet.</p>
+        <div>
+          <p>You are not a member of any family yet.</p> 
+          <Link href="/create-family">Create a family here</Link>
+        </div>
       )}
 
       <h2>Pending Invitations</h2>

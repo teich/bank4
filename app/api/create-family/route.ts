@@ -24,14 +24,21 @@ export async function POST(request: Request) {
       data: {
         name: familyName,
         members: {
-          connect: { id: session.user.id },
+          create: {
+            user: { connect: { id: session.user.id } },
+            role: "PARENT",
+          },
+        },
+      },
+      include: {
+        members: {
+          include: {
+            user: true,
+          },
         },
       },
     })
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: { role: "PARENT" },
-    })
+
     return NextResponse.json({ success: true, family: newFamily })
   } catch (error) {
     console.error('Error creating family:', error)

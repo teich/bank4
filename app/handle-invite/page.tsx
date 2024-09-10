@@ -24,5 +24,12 @@ export default async function HandleInvitePage({
     redirect('/create-family')
   }
 
-  return <InvitationPrompt invite={invite} user={session.user} />
+  return <InvitationPrompt 
+    invite={invite} 
+    user={{
+      id: session.user.id ?? '',
+      email: session.user.email ?? '',
+      name: session.user.name
+    }} 
+  />
 }
