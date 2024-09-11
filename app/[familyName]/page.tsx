@@ -17,7 +17,7 @@ export default async function Page({ params }: { params: { familyName: string } 
     },
   });
 
-  if (!family || !family.members.some(member => member.user.id === session.user!.id)) {
+  if (!family || !family.members.some((member: { user: { id: string } }) => member.user.id === session.user!.id)) {
     redirect('/');
   } else {
     return <div>Family Name: {params.familyName}</div>
