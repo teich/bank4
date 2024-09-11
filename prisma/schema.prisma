@@ -1,5 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// This is your complete updated Prisma schema file
 
 generator client {
   provider = "prisma-client-js"
@@ -11,65 +10,63 @@ datasource db {
 }
 
 model User {
-  id            String          @id @default(cuid())
-  name          String?
-  email         String          @unique
-  username      String?         @unique // Make it optional
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  // Optional for WebAuthn support
-  Authenticator Authenticator[]
-  familyMembers FamilyMember[]  // New relation
-  createdInvites Invite[]
- 
+  id                    String             @id @default(cuid())
+  name                  String?
+  email                 String             @unique
+  username              String?            @unique
+  emailVerified         DateTime?
+  image                 String?
+  accounts              Account[]
+  sessions              Session[]
+  authenticators        Authenticator[]
+  familyMembers         FamilyMember[]
+  createdInvites        Invite[]
+  createdTransactions   Transaction[]      @relation("CreatedBy")
+  transactions          Transaction[]      @relation("TransactionOwner")
+  createdAllowanceSettings AllowanceSetting[] @relation("AllowanceSettingCreator")
+  allowanceSettings     AllowanceSetting[] @relation("AllowanceSettingOwner")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Account {
+  id                String  @id @default(cuid())
   userId            String
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String?
-  access_token      String?
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String?
+  id_token          String? @db.Text
   session_state     String?
- 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
- 
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
-  @@id([provider, providerAccountId])
+
+  @@unique([provider, providerAccountId])
 }
 
 model Session {
+  id           String   @id @default(cuid())
   sessionToken String   @unique
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model VerificationToken {
   identifier String
-  token      String
+  token      String   @unique
   expires    DateTime
- 
-  @@id([identifier, token])
+
+  @@unique([identifier, token])
 }
 
-// Optional for WebAuthn support
 model Authenticator {
-  credentialID         String  @unique
+  credentialID         String  @id
   userId               String
   providerAccountId    String
   credentialPublicKey  String
@@ -77,19 +74,22 @@ model Authenticator {
   credentialDeviceType String
   credentialBackedUp   Boolean
   transports           String?
- 
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
-  @@id([userId, credentialID])
+
+  @@unique([userId, credentialID])
 }
 
 model Family {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  members   FamilyMember[] // Changed from User[] to FamilyMember[]
-  invites   Invite[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               String             @id @default(cuid())
+  name             String
+  members          FamilyMember[]
+  invites          Invite[]
+  transactions     Transaction[]
+  allowanceSettings AllowanceSetting[]
+  currency         Currency           @default(USD)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
 }
 
 model Invite {
@@ -101,7 +101,7 @@ model Invite {
   createdBy  User     @relation(fields: [createdById], references: [id])
   createdById String
   createdAt  DateTime @default(now())
-  status     String   @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  status     InviteStatus @default(PENDING)
 
   @@unique([email, familyId, createdAt])
 }
@@ -117,7 +117,66 @@ model FamilyMember {
   @@unique([userId, familyId])
 }
 
+model Transaction {
+  id          String   @id @default(cuid())
+  description String
+  date        DateTime
+  amount      Int
+  category    Category
+  createdBy   User     @relation("CreatedBy", fields: [createdById], references: [id])
+  createdById String
+  owner       User     @relation("TransactionOwner", fields: [ownerId], references: [id])
+  ownerId     String
+  family      Family   @relation(fields: [familyId], references: [id])
+  familyId    String
+  isSystemCreated Boolean @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AllowanceSetting {
+  id          String   @id @default(cuid())
+  category    Category
+  amount      Int
+  period      AllowancePeriod
+  isPercentage Boolean @default(false)
+  createdBy   User     @relation("AllowanceSettingCreator", fields: [createdById], references: [id])
+  createdById String
+  user        User     @relation("AllowanceSettingOwner", fields: [userId], references: [id])
+  userId      String
+  family      Family   @relation(fields: [familyId], references: [id])
+  familyId    String
+  createdAt   DateTime @default(now())
+
+  @@index([userId, familyId, category, createdAt])
+}
+
 enum Role {
   PARENT
   CHILD
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum Category {
+  SPENDING
+  SAVING
+  GIVING
+}
+
+enum AllowancePeriod {
+  WEEK
+  MONTH
+  YEAR
+}
+
+enum Currency {
+  USD
+  EUR
+  GBP
+  // Add more currencies as needed
 }
