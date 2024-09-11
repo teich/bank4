@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Invite } from '@prisma/client';
+import { CheckCircle, XCircle, Users } from 'lucide-react';
 
 interface InvitationPromptProps {
   invite: Invite & { family: { name: string } };
@@ -56,23 +57,40 @@ export default function InvitationPrompt({ invite, user }: InvitationPromptProps
   };
 
   return (
-    <Card className="w-[350px] mx-auto mt-10">
-      <CardHeader>
-        <CardTitle>Family Invitation</CardTitle>
+    <Card className="w-[350px] mx-auto mt-10 shadow-lg">
+      <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-t-lg">
+        <CardTitle className="flex items-center space-x-2">
+          <Users className="w-6 h-6" />
+          <span>Family Invitation</span>
+        </CardTitle>
       </CardHeader>
-      <CardContent>
-        <p className="mb-4">
-          You've been invited to join the family "{invite.family.name}" with the role of {invite.role}.
+      <CardContent className="pt-6">
+        <p className="text-center mb-4">
+          You've been invited to join the family
+          <span className="font-semibold"> "{invite.family.name}" </span>
+          with the role of
+          <span className="font-semibold"> {invite.role}</span>.
         </p>
-        <div className="flex justify-between">
-          <Button onClick={handleAccept} disabled={isLoading}>
-            Accept
-          </Button>
-          <Button onClick={handleDecline} variant="outline" disabled={isLoading}>
-            Decline
-          </Button>
-        </div>
       </CardContent>
+      <CardFooter className="flex justify-center space-x-4">
+        <Button
+          onClick={handleAccept}
+          disabled={isLoading}
+          className="bg-green-500 hover:bg-green-600 text-white"
+        >
+          <CheckCircle className="w-5 h-5 mr-2" />
+          Accept
+        </Button>
+        <Button
+          onClick={handleDecline}
+          variant="outline"
+          disabled={isLoading}
+          className="border-red-500 text-red-500 hover:bg-red-50"
+        >
+          <XCircle className="w-5 h-5 mr-2" />
+          Decline
+        </Button>
+      </CardFooter>
     </Card>
   );
 }
