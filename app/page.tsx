@@ -81,11 +81,16 @@ export default async function Home() {
           {user.familyMembers.length > 0 ? (
             <ul className="space-y-2">
               {user.familyMembers.map(familyMember => (
-                <li key={familyMember.family.id} className="flex justify-between items-center">
-                  <Link href={`/${familyMember.family.name}/settings`} className="text-blue-600 hover:underline">
-                    {familyMember.family.name}
+                <li key={familyMember.family.id} className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Link href={`/${familyMember.family.name}/${user.username}`} className="text-blue-600 hover:underline">
+                      {familyMember.family.name}
+                    </Link>
+                    <span className="text-sm text-gray-500">({familyMember.role})</span>
+                  </div>
+                  <Link href={`/${familyMember.family.name}/settings`} className="text-sm text-blue-500 hover:underline">
+                    Settings
                   </Link>
-                  <span className="text-sm text-gray-500">Role: {familyMember.role}</span>
                 </li>
               ))}
             </ul>
