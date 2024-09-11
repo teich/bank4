@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
 import { PrismaClient } from "@prisma/client"
 import Link from 'next/link'
@@ -32,6 +33,11 @@ export default async function Home() {
 
   if (!user) {
     return <p>User not found.</p>
+  }
+
+  // Check if the user has a username set
+  if (!user.username) {
+    redirect('/signup')
   }
 
   // Fetch pending invites for the user
