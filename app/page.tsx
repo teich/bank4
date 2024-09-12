@@ -40,6 +40,15 @@ export default async function Home() {
     redirect('/signup')
   }
 
+  // New check for child in single family
+  const childFamilies = user.familyMembers.filter(member => member.role === 'CHILD')
+  const isParentInAnyFamily = user.familyMembers.some(member => member.role === 'PARENT')
+
+  if (childFamilies.length === 1 && !isParentInAnyFamily) {
+    const family = childFamilies[0].family
+    redirect(`/${family.name}/${user.username}`)
+  }
+
   // Fetch pending invites for the user
   const pendingInvites = await prisma.invite.findMany({
     where: {
