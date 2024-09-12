@@ -29,7 +29,7 @@ export default async function Page({ params }: { params: { familyName: string } 
   const invites = await prisma.invite.findMany({
     where: { 
       familyId: family.id,
-      status: { not: 'DELETED' } // Only fetch non-deleted invites
+      status: { not: 'DELETED' } // Use string literal
     },
     include: { createdBy: true },
     orderBy: { createdAt: 'desc' },
