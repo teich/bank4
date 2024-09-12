@@ -82,8 +82,8 @@ export default async function Page({ params }: { params: { familyName: string } 
               members={family.members.map(m => ({ 
                 ...m.user, 
                 role: m.role,
-                link: `/${params.familyName}/${m.user.username}`, // Changed to use username
-                username: m.user.username
+                link: `/${params.familyName}/${m.user.username ?? m.user.id}`,
+                username: m.user.username ?? m.user.id
               }))}
               currentUserEmail={session?.user?.email || ''} 
               isParent={isParent}

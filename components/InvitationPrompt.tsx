@@ -66,10 +66,10 @@ export default function InvitationPrompt({ invite, user }: InvitationPromptProps
       </CardHeader>
       <CardContent className="pt-6">
         <p className="text-center mb-4">
-          You've been invited to join the family
-          <span className="font-semibold"> "{invite.family.name}" </span>
-          with the role of
-          <span className="font-semibold"> {invite.role}</span>.
+          You&apos;ve been invited to join a family.
+        </p>
+        <p className="text-center mb-4">
+          Click &ldquo;Accept&rdquo; to join or &ldquo;Decline&rdquo; to refuse.
         </p>
       </CardContent>
       <CardFooter className="flex justify-center space-x-4">

@@ -54,7 +54,7 @@ export function CreateFamilyModal() {
       console.error('Failed to create family:', error)
     }
   }
-
+  
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>

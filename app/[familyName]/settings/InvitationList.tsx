@@ -38,7 +38,9 @@ export default function InvitationList({ invites }: InvitationListProps) {
   };
 
   if (pendingInvites.length === 0) {
-    return <p className="text-center text-gray-500">No pending invitations.</p>;
+    return <p className="text-center text-gray-500">
+      We couldn&apos;t find any invitations.
+    </p>;
   }
 
   return (
@@ -49,7 +51,7 @@ export default function InvitationList({ invites }: InvitationListProps) {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4">
               <div className="mb-2 sm:mb-0">
                 <h3 className="text-sm font-semibold">Invitation to {invite.family.name}</h3>
-                <p className="text-xs text-gray-500">You've been invited as {invite.role}</p>
+                <p className="text-xs text-gray-500">You&apos;ve been invited as {invite.role}</p>
               </div>
               <div className="flex space-x-2 sm:ml-4">
                 <Button
