@@ -4,7 +4,7 @@ import type { Metadata } from "next"
 import { ThemeProvider } from "@/components/theme-provider"
 import SignIn from "@/components/sign-in"
 import { ThemeToggle } from "@/components/theme-toggle"
-
+import Link from "next/link"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -24,7 +24,9 @@ export default async function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <header className="border-b">
             <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-              <h1 className="text-lg font-semibold">Allowance Tracking</h1>
+              <Link href="/" className="text-lg font-semibold hover:text-primary transition-colors">
+                Allowance Tracking
+              </Link>
               <div className="flex items-center space-x-4">
                 <ThemeToggle />
                 <SignIn />

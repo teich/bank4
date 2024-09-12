@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import InviteMemberForm from '@/app/[familyName]/settings/InviteMemberForm';
 import FamilyInvites from '@/app/[familyName]/settings/FamilyInvites';
 import FamilyMembersList from '@/app/[familyName]/settings/FamilyMembersList';
+import Link from 'next/link';
 
 export default async function Page({ params }: { params: { familyName: string } }) {
   const session = await auth();
@@ -78,7 +79,12 @@ export default async function Page({ params }: { params: { familyName: string } 
         <Card>
           <CardContent className="p-6">
             <FamilyMembersList 
-              members={family.members.map(m => ({ ...m.user, role: m.role }))}
+              members={family.members.map(m => ({ 
+                ...m.user, 
+                role: m.role,
+                link: `/${params.familyName}/${m.user.username}`, // Changed to use username
+                username: m.user.username
+              }))}
               currentUserEmail={session?.user?.email || ''} 
               isParent={isParent}
               familyId={family.id}

@@ -3,12 +3,15 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { deleteFamilyMember } from './actions';
+import Link from 'next/link';
 
 interface FamilyMember {
   id: string;
   name: string | null;
   email: string;
   role: string;
+  link: string;
+  username: string; // Add username to the interface
 }
 
 interface FamilyMembersListProps {
@@ -39,12 +42,15 @@ export default function FamilyMembersList({ members, currentUserEmail, isParent,
   };
 
   return (
-    <ul>
+    <ul className="space-y-4">
       {familyMembers.map(member => (
-        <li key={member.id} className="mb-2">
-          <p><strong>Name:</strong> {member.name}</p>
-          <p><strong>Email:</strong> {member.email}</p>
-          <p><strong>Role:</strong> {member.role}</p>
+        <li key={member.id} className="flex items-center justify-between">
+          <div>
+            <Link href={member.link} className="text-blue-600 hover:underline">
+              {member.name} ({member.username})
+            </Link>
+            <span className="text-sm text-gray-500 ml-2">({member.role.toLowerCase()})</span>
+          </div>
           {isParent && member.email !== currentUserEmail && (
             <Button 
               variant="destructive" 
