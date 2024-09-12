@@ -39,12 +39,16 @@ export async function saveAllowanceSettings(data: z.infer<typeof SaveAllowanceSe
     throw new Error("Unauthorized")
   }
 
+  if (!session.user.id) {
+    throw new Error("User ID is missing")
+  }
+
   const createdSettings = await Promise.all(
     settings.map(setting =>
       prisma.allowanceSetting.create({
         data: {
           ...setting,
-          createdById: session.user.id,
+          createdById: session.user!.id!,
           userId,
           familyId
         }
