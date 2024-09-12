@@ -1,0 +1,137 @@
+import React, { useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { HeartIcon, PiggyBankIcon, ShoppingCartIcon, DollarSignIcon, PercentIcon } from "lucide-react"
+
+type CategorySettings = {
+  type: 'dollar' | 'percent';
+  value: string;
+  frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
+}
+
+export default function ParentSettings() {
+  const [settings, setSettings] = useState<Record<string, CategorySettings>>({
+    Spending: { type: 'dollar', value: '5', frequency: 'weekly' },
+    Saving: { type: 'percent', value: '20', frequency: 'yearly' },
+    Giving: { type: 'percent', value: '10', frequency: 'monthly' },
+  })
+
+  const categories = [
+    { name: 'Spending', icon: ShoppingCartIcon, color: 'text-purple-500' },
+    { name: 'Saving', icon: PiggyBankIcon, color: 'text-green-500' },
+    { name: 'Giving', icon: HeartIcon, color: 'text-pink-500' },
+  ]
+
+  const handleSettingChange = (category: string, field: keyof CategorySettings, value: string) => {
+    setSettings(prev => ({
+      ...prev,
+      [category]: { ...prev[category], [field]: value }
+    }))
+  }
+
+  const handleTypeToggle = (category: string) => {
+    setSettings(prev => ({
+      ...prev,
+      [category]: { 
+        ...prev[category], 
+        type: prev[category].type === 'dollar' ? 'percent' : 'dollar',
+        value: prev[category].type === 'dollar' ? '0' : '0.00'
+      }
+    }))
+  }
+
+  return (
+    <div className="container mx-auto p-4 bg-gray-50 min-h-screen">
+      <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">Parent Settings</h1>
+      
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Allowance Settings</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {categories.map((category) => (
+              <div key={category.name} className="flex items-center space-x-4">
+                <div className="w-28 flex items-center">
+                  {React.createElement(category.icon, { className: `mr-2 ${category.color}`, size: 24 })}
+                  <span className="font-medium">{category.name}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <DollarSignIcon className={settings[category.name].type === 'dollar' ? category.color : 'text-gray-400'} size={16} />
+                  <Switch
+                    checked={settings[category.name].type === 'percent'}
+                    onCheckedChange={() => handleTypeToggle(category.name)}
+                  />
+                  <PercentIcon className={settings[category.name].type === 'percent' ? category.color : 'text-gray-400'} size={16} />
+                </div>
+                <div className="relative w-24">
+                  <Input
+                    type="number"
+                    value={settings[category.name].value}
+                    onChange={(e) => handleSettingChange(category.name, 'value', e.target.value)}
+                    className="pl-6"
+                  />
+                  <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400">
+                    {settings[category.name].type === 'dollar' ? '$' : '%'}
+                  </span>
+                </div>
+                <Select
+                  value={settings[category.name].frequency}
+                  onValueChange={(value) => handleSettingChange(category.name, 'frequency', value)}
+                >
+                  <SelectTrigger className="w-28">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="daily">Daily</SelectItem>
+                    <SelectItem value="weekly">Weekly</SelectItem>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                    <SelectItem value="yearly">Yearly</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            ))}
+            <Button className="w-full mt-4">Save Changes</Button>
+          </div>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Change Log</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>New Value</TableHead>
+                <TableHead>Changed By</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {[
+                { date: '2023-05-01', category: 'Spending', newValue: '$5/week', changedBy: 'mom@example.com' },
+                { date: '2023-03-15', category: 'Saving', newValue: '20% yearly', changedBy: 'dad@example.com' },
+                { date: '2023-01-01', category: 'Giving', newValue: '10% monthly', changedBy: 'mom@example.com' },
+              ].map((change, index) => (
+                <TableRow key={index}>
+                  <TableCell>{change.date}</TableCell>
+                  <TableCell>{change.category}</TableCell>
+                  <TableCell>{change.newValue}</TableCell>
+                  <TableCell>{change.changedBy}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
