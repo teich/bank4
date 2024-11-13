@@ -13,4 +13,4 @@ So... I'm copying `.env.local` to `.env`
 
 ## Todo's
 - [ ] add delete for transactions
-- [ ] reorder categories
+- [ ] run allowance  on a cron job

@@ -4,23 +4,25 @@ import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { HeartIcon, PiggyBankIcon, ShoppingCartIcon, DollarSignIcon, PercentIcon } from "lucide-react"
-import { AllowanceSetting, Category, AllowancePeriod, Currency } from "@prisma/client"
+import { HeartIcon, PiggyBankIcon, ShoppingCartIcon } from "lucide-react"
+import { AllowanceSetting, Category, Currency } from "@prisma/client"
 import { saveAllowanceSettings } from "./actions"
 import { useToast } from "@/hooks/use-toast"
 
 type CategorySettings = {
   category: Category
   amount: number
-  period: AllowancePeriod
-  isPercentage: boolean
+}
+
+type AllowanceSettingWithCreator = AllowanceSetting & {
+  createdBy: {
+    name: string
+  }
 }
 
 type Props = {
-  initialSettings: AllowanceSetting[]
+  initialSettings: AllowanceSettingWithCreator[]
   familyId: string
   userId: string
   currency: Currency
@@ -36,32 +38,39 @@ export default function AllowanceSettingsForm({ initialSettings, familyId, userI
           .map(setting => ({
             category: setting.category,
             amount: setting.amount,
-            period: setting.period,
-            isPercentage: setting.isPercentage
           }))
       : [
-          { category: "SPENDING", amount: 5, period: "WEEK", isPercentage: false },
-          { category: "SAVING", amount: 20, period: "MONTH", isPercentage: true },
-          { category: "GIVING", amount: 10, period: "MONTH", isPercentage: true },
+          { category: "SPENDING", amount: 5 },
+          { category: "SAVING", amount: 20 },
+          { category: "GIVING", amount: 5 },
         ]
   )
   const { toast } = useToast()
 
   const categories = [
-    { name: 'SPENDING', icon: ShoppingCartIcon, color: 'text-purple-500' },
-    { name: 'SAVING', icon: PiggyBankIcon, color: 'text-green-500' },
-    { name: 'GIVING', icon: HeartIcon, color: 'text-pink-500' },
+    { 
+      name: 'SPENDING', 
+      icon: ShoppingCartIcon, 
+      color: 'text-purple-500',
+      label: 'Weekly Spending'
+    },
+    { 
+      name: 'SAVING', 
+      icon: PiggyBankIcon, 
+      color: 'text-green-500',
+      label: 'Annual Savings'
+    },
+    { 
+      name: 'GIVING', 
+      icon: HeartIcon, 
+      color: 'text-pink-500',
+      label: 'Weekly Giving'
+    },
   ]
 
-  const handleSettingChange = (index: number, field: keyof CategorySettings, value: any) => {
+  const handleAmountChange = (index: number, value: number) => {
     setSettings(prev => prev.map((setting, i) => 
-      i === index ? { ...setting, [field]: value } : setting
-    ))
-  }
-
-  const handleTypeToggle = (index: number) => {
-    setSettings(prev => prev.map((setting, i) => 
-      i === index ? { ...setting, isPercentage: !setting.isPercentage } : setting
+      i === index ? { ...setting, amount: value } : setting
     ))
   }
 
@@ -71,11 +80,12 @@ export default function AllowanceSettingsForm({ initialSettings, familyId, userI
       await saveAllowanceSettings({
         familyId,
         userId,
-        settings: settings.map(({ category, amount, period, isPercentage }) => ({
+        settings: settings.map(({ category, amount }) => ({
           category,
           amount,
-          period,
-          isPercentage
+          // Set fixed values based on category
+          period: category === "SAVING" ? "YEAR" : "WEEK",
+          isPercentage: category === "SAVING"
         }))
       })
       toast({
@@ -103,44 +113,31 @@ export default function AllowanceSettingsForm({ initialSettings, familyId, userI
           <div className="space-y-4">
             {settings.map((setting, index) => {
               const category = categories.find(c => c.name === setting.category)!
+              const isSaving = setting.category === "SAVING"
               return (
                 <div key={setting.category} className="flex items-center space-x-4">
-                  <div className="w-28 flex items-center">
+                  <div className="w-48 flex items-center">
                     {React.createElement(category.icon, { className: `mr-2 ${category.color}`, size: 24 })}
-                    <span className="font-medium">{setting.category}</span>
+                    <span className="font-medium whitespace-nowrap">{category.label}</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <DollarSignIcon className={!setting.isPercentage ? category.color : 'text-gray-400'} size={16} />
-                    <Switch
-                      checked={setting.isPercentage}
-                      onCheckedChange={() => handleTypeToggle(index)}
-                    />
-                    <PercentIcon className={setting.isPercentage ? category.color : 'text-gray-400'} size={16} />
-                  </div>
-                  <div className="relative w-24">
+                  <div className="relative w-32">
+                    {!isSaving && (
+                      <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none">
+                        $
+                      </span>
+                    )}
                     <Input
                       type="number"
                       value={setting.amount}
-                      onChange={(e) => handleSettingChange(index, 'amount', parseFloat(e.target.value))}
-                      className="pl-6"
+                      onChange={(e) => handleAmountChange(index, parseFloat(e.target.value))}
+                      className={isSaving ? 'pr-6 text-right' : 'pl-8 text-right'}
                     />
-                    <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400">
-                      {setting.isPercentage ? '%' : currency}
-                    </span>
+                    {isSaving && (
+                      <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none">
+                        %
+                      </span>
+                    )}
                   </div>
-                  <Select
-                    value={setting.period}
-                    onValueChange={(value: AllowancePeriod) => handleSettingChange(index, 'period', value)}
-                  >
-                    <SelectTrigger className="w-28">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="WEEK">Weekly</SelectItem>
-                      <SelectItem value="MONTH">Monthly</SelectItem>
-                      <SelectItem value="YEAR">Yearly</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
               )
             })}
@@ -169,10 +166,11 @@ export default function AllowanceSettingsForm({ initialSettings, familyId, userI
                   <TableCell>{setting.createdAt.toLocaleDateString()}</TableCell>
                   <TableCell>{setting.category}</TableCell>
                   <TableCell>
-                    {setting.isPercentage ? `${setting.amount}%` : `${currency}${setting.amount}`} 
-                    {` per ${setting.period.toLowerCase()}`}
+                    {setting.category === "SAVING" 
+                      ? `${setting.amount}% per year` 
+                      : `$${setting.amount} per week`}
                   </TableCell>
-                  <TableCell>{setting.createdById}</TableCell>
+                  <TableCell>{setting.createdBy.name}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

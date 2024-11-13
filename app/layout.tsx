@@ -5,6 +5,8 @@ import { ThemeProvider } from "@/components/theme-provider"
 import SignIn from "@/components/sign-in"
 import { ThemeToggle } from "@/components/theme-toggle"
 import Link from "next/link"
+import { auth } from "@/auth"
+import { PrismaClient } from "@prisma/client"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -18,6 +20,18 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const session = await auth()
+  let userName: string | null = null
+
+  if (session?.user?.email) {
+    const prisma = new PrismaClient()
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { name: true }
+    })
+    userName = user?.name || null
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
@@ -29,7 +43,15 @@ export default async function RootLayout({
               </Link>
               <div className="flex items-center space-x-4">
                 <ThemeToggle />
-                <SignIn />
+                {userName && (
+                  <Link 
+                    href="/profile" 
+                    className="text-sm hover:text-primary transition-colors"
+                  >
+                    {userName}
+                  </Link>
+                )}
+                <SignIn showName={false} />
               </div>
             </div>
           </header>

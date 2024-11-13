@@ -1,11 +1,12 @@
 import { signIn, signOut, auth } from "@/auth"
 import { Button } from "@/components/ui/button"
 import { UserIcon, LogOutIcon } from "lucide-react"
-import { prisma } from "@/lib/prisma"
-import { cookies } from 'next/headers'
 
+interface SignInProps {
+  showName?: boolean
+}
 
-export default async function SignIn() {
+export default async function SignIn({ showName = true }: SignInProps) {
     const session = await auth()
 
     if (!session?.user) {
@@ -23,10 +24,11 @@ export default async function SignIn() {
             </form>
         );
     } else {
- 
         return (
             <div className="flex items-center space-x-4">
-                <span className="text-sm text-muted-foreground">{session.user.name}</span>
+                {showName && (
+                    <span className="text-sm text-muted-foreground">{session.user.name}</span>
+                )}
                 <form
                 action={async () => {
                     "use server"

@@ -7,10 +7,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowUpIcon, ArrowDownIcon, HeartIcon, PiggyBankIcon, ShoppingCartIcon, PlusIcon, MinusIcon } from "lucide-react"
+import { ArrowUpIcon, ArrowDownIcon, HeartIcon, PiggyBankIcon, ShoppingCartIcon, PlusIcon, MinusIcon, Settings } from "lucide-react"
 import { addTransaction } from './actions'
 import { TransactionForm } from './TransactionForm'
 import { CATEGORY_ORDER } from '@/lib/constants'
+import Link from "next/link"
 
 const categoryIcons = {
   SPENDING: ShoppingCartIcon,
@@ -108,6 +109,32 @@ export default async function Page({ params }: { params: { familyName: string, u
         ...Object.fromEntries(categoryTotals.map(ct => [ct.category, ct._sum.amount || 0]))
     }
 
+    const oneWeekAgo = new Date()
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+
+    // Calculate weekly totals for each category
+    const weeklyChanges = await prisma.transaction.groupBy({
+        by: ['category'],
+        where: {
+            familyId: familyMember.family.id,
+            ownerId: targetUser.user.id,
+            date: {
+                gte: oneWeekAgo
+            }
+        },
+        _sum: {
+            amount: true
+        }
+    })
+
+    // Create a map of weekly changes, defaulting to 0 for categories with no transactions
+    const weeklyChangeMap = {
+        SPENDING: 0,
+        SAVING: 0,
+        GIVING: 0,
+        ...Object.fromEntries(weeklyChanges.map(wc => [wc.category, wc._sum.amount || 0]))
+    }
+
     const formatAmount = (amount: number) => {
         const absAmount = Math.abs(amount / 100).toFixed(2) // Convert cents to dollars
         const symbol = currencySymbols[familyMember.family.currency] || familyMember.family.currency
@@ -116,26 +143,54 @@ export default async function Page({ params }: { params: { familyName: string, u
 
     return (
         <div className="container mx-auto p-4 bg-background min-h-screen">
-            <h1 className="text-4xl font-bold mb-8 text-center text-foreground">
-                {isViewingSelf ? "My Money Dashboard" : `${targetUser.user.name}'s Money Dashboard`}
-            </h1>
+            <div className="relative mb-8">
+                <h1 className="text-4xl font-bold text-center text-foreground">
+                    {isViewingSelf ? "My Money Dashboard" : `${targetUser.user.name}'s Money Dashboard`}
+                </h1>
+                
+                {isParent && (
+                    <Link
+                        href={`/${params.familyName}/${params.userName}/settings`}
+                        className="absolute right-0 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-accent transition-colors duration-200 group"
+                        title="Settings"
+                    >
+                        <Settings className="w-5 h-5 text-muted-foreground group-hover:text-foreground" />
+                    </Link>
+                )}
+            </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 {CATEGORY_ORDER.map((category) => {
                     const Icon = categoryIcons[category]
+                    const weeklyChange = weeklyChangeMap[category]
                     return (
                         <Card key={category} className={`overflow-hidden ${categoryColors[category]} text-white shadow-lg transform transition-all duration-300 hover:scale-105`}>
                             <CardContent className="p-6">
-                                <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center justify-between mb-2">
                                     <div className="bg-white/20 p-3 rounded-full">
                                         <Icon size={32} className="text-white" />
                                     </div>
-                                    <span className="text-xs font-semibold uppercase tracking-wider">{category}</span>
+                                    <h3 className="text-lg font-bold uppercase tracking-wider">
+                                        {category}
+                                    </h3>
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-4xl font-bold mb-2">
+                                    <span className="text-5xl font-bold mb-4">
                                         {formatAmount(categoryTotalMap[category])}
                                     </span>
+                                    <div className="flex items-center justify-between pt-3 border-t border-white/20">
+                                        <span className="text-sm font-medium">This Week</span>
+                                        <div className="flex items-center">
+                                            {weeklyChange > 0 ? (
+                                                <ArrowUpIcon size={16} className="mr-1" />
+                                            ) : weeklyChange < 0 ? (
+                                                <ArrowDownIcon size={16} className="mr-1" />
+                                            ) : null}
+                                            <span className="text-sm font-semibold">
+                                                {formatAmount(weeklyChange)}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
