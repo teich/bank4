@@ -6,9 +6,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { User } from "@/lib/types"
-import { LogOut, User as UserIcon, Moon, Sun } from "lucide-react"
+import { LogOut, User as UserIcon, Moon, Sun, Settings } from "lucide-react"
 import { useTheme } from "next-themes"
 import Link from "next/link"
 import { signOut } from "next-auth/react"
@@ -19,6 +20,7 @@ interface UserMenuProps {
 
 export function UserMenu({ user }: UserMenuProps) {
   const { setTheme, theme } = useTheme()
+  const isAdmin = user.email === 'oren@teich.net'
 
   const initials = user.name
     ?.split(" ")
@@ -41,6 +43,15 @@ export function UserMenu({ user }: UserMenuProps) {
             Profile
           </Link>
         </DropdownMenuItem>
+        {isAdmin && (
+          <DropdownMenuItem asChild>
+            <Link href="/admin" className="cursor-pointer">
+              <Settings className="mr-2 h-4 w-4" />
+              Admin
+            </Link>
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
           {theme === "dark" ? (
             <Sun className="mr-2 h-4 w-4" />
