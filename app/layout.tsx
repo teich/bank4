@@ -7,6 +7,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import Link from "next/link"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { UserMenu } from "@/components/user-menu"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -21,15 +22,6 @@ export default async function RootLayout({
   children: React.ReactNode
 }) {
   const session = await auth()
-  let userName: string | null = null
-
-  if (session?.user?.email) {
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: { name: true }
-    })
-    userName = user?.name || null
-  }
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -41,16 +33,17 @@ export default async function RootLayout({
                 Allowance Tracking
               </Link>
               <div className="flex items-center space-x-4">
-                <ThemeToggle />
-                {userName && (
-                  <Link 
-                    href="/profile" 
-                    className="text-sm hover:text-primary transition-colors"
-                  >
-                    {userName}
-                  </Link>
+                {session?.user ? (
+                  <UserMenu 
+                    user={{
+                      name: session.user.name ?? null,
+                      email: session.user.email ?? null,
+                      image: session.user.image ?? null
+                    }} 
+                  />
+                ) : (
+                  <SignIn showName={false} />
                 )}
-                <SignIn showName={false} />
               </div>
             </div>
           </header>

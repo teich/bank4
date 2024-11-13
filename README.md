@@ -12,5 +12,6 @@ So... I'm copying `.env.local` to `.env`
 `ln -s .env.local .env`
 
 ## Todo's
-- [ ] add delete for transactions
-- [ ] run allowance  on a cron job
+- [ ] limit who can signup
+- [ ] fix color change on theme toggle
+- [ ] check if cron is working next week!
