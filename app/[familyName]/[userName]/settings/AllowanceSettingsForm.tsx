@@ -10,6 +10,7 @@ import { AllowanceSetting, Category, Currency } from "@prisma/client"
 import { saveAllowanceSettings } from "./actions"
 import { useToast } from "@/hooks/use-toast"
 import { useTheme } from "next-themes"
+import { AllowanceTestButton } from "./AllowanceTestButton"
 
 type CategorySettings = {
   category: Category
@@ -38,7 +39,7 @@ export default function AllowanceSettingsForm({ initialSettings, familyId, userI
           )
           .map(setting => ({
             category: setting.category,
-            amount: setting.amount,
+            amount: setting.amount / 100,
           }))
       : [
           { category: "SPENDING", amount: 5 },
@@ -84,8 +85,7 @@ export default function AllowanceSettingsForm({ initialSettings, familyId, userI
         userId,
         settings: settings.map(({ category, amount }) => ({
           category,
-          amount,
-          // Set fixed values based on category
+          amount: Math.round(amount * 100),
           period: category === "SAVING" ? "YEAR" : "WEEK",
           isPercentage: category === "SAVING"
         }))
@@ -177,8 +177,8 @@ export default function AllowanceSettingsForm({ initialSettings, familyId, userI
                   </TableCell>
                   <TableCell>
                     {setting.category === "SAVING" 
-                      ? `${setting.amount}% per year` 
-                      : `$${setting.amount} per week`}
+                      ? `${setting.amount / 100}% per year` 
+                      : `$${(setting.amount / 100).toFixed(2)} per week`}
                   </TableCell>
                   <TableCell>{setting.createdBy.name}</TableCell>
                 </TableRow>
@@ -187,6 +187,8 @@ export default function AllowanceSettingsForm({ initialSettings, familyId, userI
           </Table>
         </CardContent>
       </Card>
+      
+      <AllowanceTestButton userId={userId} />
     </form>
   )
 }

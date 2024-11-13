@@ -1,0 +1,190 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_URL")
+}
+
+model User {
+  id                    String             @id @default(cuid())
+  name                  String?
+  email                 String             @unique
+  username              String?            @unique
+  emailVerified         DateTime?
+  image                 String?
+  lastAllowanceRun      DateTime?
+  lastAllowanceAttempt  DateTime?
+  allowanceRunCount     Int                @default(0)
+  accounts              Account[]
+  sessions              Session[]
+  authenticators        Authenticator[]
+  familyMembers         FamilyMember[]
+  createdInvites        Invite[]
+  createdTransactions   Transaction[]      @relation("CreatedBy")
+  transactions          Transaction[]      @relation("TransactionOwner")
+  createdAllowanceSettings AllowanceSetting[] @relation("AllowanceSettingCreator")
+  allowanceSettings     AllowanceSetting[] @relation("AllowanceSettingOwner")
+  allowanceRunLogs      AllowanceRunLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Authenticator {
+  credentialID         String  @id
+  userId               String
+  providerAccountId    String
+  credentialPublicKey  String
+  counter              Int
+  credentialDeviceType String
+  credentialBackedUp   Boolean
+  transports           String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, credentialID])
+}
+
+model Family {
+  id               String             @id @default(cuid())
+  name             String             @unique
+  members          FamilyMember[]
+  invites          Invite[]
+  transactions     Transaction[]
+  allowanceSettings AllowanceSetting[]
+  currency         Currency           @default(USD)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+}
+
+model FamilyMember {
+  id       String @id @default(cuid())
+  user     User   @relation(fields: [userId], references: [id])
+  userId   String
+  family   Family @relation(fields: [familyId], references: [id])
+  familyId String
+  role     Role
+
+  @@unique([userId, familyId])
+}
+
+model Invite {
+  id         String   @id @default(cuid())
+  email      String
+  role       Role
+  family     Family   @relation(fields: [familyId], references: [id])
+  familyId   String
+  createdBy  User     @relation(fields: [createdById], references: [id])
+  createdById String
+  createdAt  DateTime @default(now())
+  status     InviteStatus @default(PENDING)
+
+  @@unique([email, familyId, createdAt])
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  description String
+  date        DateTime
+  amount      Int
+  category    Category
+  createdBy   User     @relation("CreatedBy", fields: [createdById], references: [id])
+  createdById String
+  owner       User     @relation("TransactionOwner", fields: [ownerId], references: [id])
+  ownerId     String
+  family      Family   @relation(fields: [familyId], references: [id])
+  familyId    String
+  isSystemCreated Boolean @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AllowanceSetting {
+  id          String   @id @default(cuid())
+  category    Category
+  amount      Int
+  period      AllowancePeriod
+  isPercentage Boolean @default(false)
+  createdBy   User     @relation("AllowanceSettingCreator", fields: [createdById], references: [id])
+  createdById String
+  user        User     @relation("AllowanceSettingOwner", fields: [userId], references: [id])
+  userId      String
+  family      Family   @relation(fields: [familyId], references: [id])
+  familyId    String
+  createdAt   DateTime @default(now())
+
+  @@index([userId, familyId, category, createdAt])
+}
+
+model AllowanceRunLog {
+  id          String    @id @default(cuid())
+  runAt       DateTime  @default(now())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  weeksRun    Int
+  success     Boolean
+  error       String?
+  amount      Int
+  details     Json?
+
+  @@index([userId, runAt])
+}
+
+enum Role {
+  PARENT
+  CHILD
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  DELETED
+}
+
+enum Category {
+  SPENDING
+  SAVING
+  GIVING
+}
+
+enum AllowancePeriod {
+  WEEK
+  MONTH
+  YEAR
+}
+
+enum Currency {
+  USD
+  EUR
+  GBP
+} 
