@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowUpIcon, ArrowDownIcon, HeartIcon, PiggyBankIcon, ShoppingCartIcon, PlusIcon, MinusIcon } from "lucide-react"
 import { addTransaction } from './actions'
+import { TransactionForm } from './TransactionForm'
 
 const categoryIcons = {
   GIVING: HeartIcon,
@@ -113,8 +114,8 @@ export default async function Page({ params }: { params: { familyName: string, u
     }
 
     return (
-        <div className="container mx-auto p-4 bg-gray-50 min-h-screen">
-            <h1 className="text-4xl font-bold mb-8 text-center text-gray-800">
+        <div className="container mx-auto p-4 bg-background min-h-screen">
+            <h1 className="text-4xl font-bold mb-8 text-center text-foreground">
                 {isViewingSelf ? "My Money Dashboard" : `${targetUser.user.name}'s Money Dashboard`}
             </h1>
             
@@ -143,63 +144,24 @@ export default async function Page({ params }: { params: { familyName: string, u
 
             <Card className="shadow-md mb-8">
                 <CardContent className="p-6">
-                    <h2 className="text-2xl font-semibold mb-4">Add New Transaction</h2>
-                    <form action={addTransaction} className="flex flex-wrap items-end gap-4">
-                        <div className="flex-grow min-w-[120px] max-w-[200px]">
-                            <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">
-                                Amount
-                            </label>
-                            <div className="relative">
-                                <Input id="amount" name="amount" type="number" placeholder="0.00" className="pl-6" step="0.01" required />
-                                <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400">
-                                    {currencySymbols[familyMember.family.currency] || familyMember.family.currency}
-                                </span>
-                            </div>
-                        </div>
-                        <div className="flex-grow">
-                            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                                Description
-                            </label>
-                            <Input id="description" name="description" placeholder="Enter description" required />
-                        </div>
-                        <div className="w-40">
-                            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
-                                Category
-                            </label>
-                            <Select name="category" required>
-                                <SelectTrigger id="category">
-                                    <SelectValue placeholder="Select" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {Object.entries(categoryIcons).map(([category, Icon]) => (
-                                        <SelectItem key={category} value={category}>
-                                            <span className="flex items-center">
-                                                <Icon size={16} className="mr-2" />
-                                                {category}
-                                            </span>
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <input type="hidden" name="targetUserId" value={targetUser.user.id} />
-                        <Button type="submit" className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-semibold py-2 px-4 rounded-md transition-all duration-300">
-                            Add
-                        </Button>
-                    </form>
+                    <h2 className="text-2xl font-semibold mb-4 text-foreground">Add New Transaction</h2>
+                    <TransactionForm 
+                        targetUserId={targetUser.user.id}
+                        currencySymbol={currencySymbols[familyMember.family.currency] || familyMember.family.currency}
+                    />
                 </CardContent>
             </Card>
 
             <Card className="shadow-md">
                 <CardContent className="p-6">
-                    <h2 className="text-2xl font-semibold mb-4">Transaction Log</h2>
+                    <h2 className="text-2xl font-semibold mb-4 text-foreground">Transaction Log</h2>
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Date</TableHead>
-                                <TableHead>Description</TableHead>
-                                <TableHead>Amount</TableHead>
-                                <TableHead>Category</TableHead>
+                                <TableHead className="text-foreground/70">Date</TableHead>
+                                <TableHead className="text-foreground/70">Description</TableHead>
+                                <TableHead className="text-foreground/70">Amount</TableHead>
+                                <TableHead className="text-foreground/70">Category</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
