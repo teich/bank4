@@ -7,11 +7,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowUpIcon, ArrowDownIcon, HeartIcon, PiggyBankIcon, ShoppingCartIcon, PlusIcon, MinusIcon, Settings } from "lucide-react"
+import { ArrowUpIcon, ArrowDownIcon, HeartIcon, PiggyBankIcon, ShoppingCartIcon, PlusIcon, MinusIcon, Settings, Trash2Icon } from "lucide-react"
 import { addTransaction } from './actions'
 import { TransactionForm } from './TransactionForm'
 import { CATEGORY_ORDER } from '@/lib/constants'
 import Link from "next/link"
+import { deleteTransaction } from "./actions"
+import { DeleteTransactionButton } from "./DeleteTransactionButton"
+import { formatAmount } from "@/lib/utils"
 
 const categoryIcons = {
   SPENDING: ShoppingCartIcon,
@@ -135,14 +138,10 @@ export default async function Page({ params }: { params: { familyName: string, u
         ...Object.fromEntries(weeklyChanges.map(wc => [wc.category, wc._sum.amount || 0]))
     }
 
-    const formatAmount = (amount: number) => {
-        const absAmount = Math.abs(amount / 100).toFixed(2) // Convert cents to dollars
-        const symbol = currencySymbols[familyMember.family.currency] || familyMember.family.currency
-        return `${symbol}${absAmount}`
-    }
+    const currencySymbol = currencySymbols[familyMember.family.currency] || familyMember.family.currency
 
     return (
-        <div className="container mx-auto p-4 bg-background min-h-screen">
+        <div className="max-w-7xl mx-auto bg-background min-h-screen">
             <div className="relative mb-8">
                 <h1 className="text-4xl font-bold text-center text-foreground">
                     {isViewingSelf ? "My Money Dashboard" : `${targetUser.user.name}'s Money Dashboard`}
@@ -176,7 +175,7 @@ export default async function Page({ params }: { params: { familyName: string, u
                                 </div>
                                 <div className="flex flex-col">
                                     <span className="text-5xl font-bold mb-4">
-                                        {formatAmount(categoryTotalMap[category])}
+                                        {formatAmount(categoryTotalMap[category], currencySymbol)}
                                     </span>
                                     <div className="flex items-center justify-between pt-3 border-t border-white/20">
                                         <span className="text-sm font-medium">This Week</span>
@@ -187,7 +186,7 @@ export default async function Page({ params }: { params: { familyName: string, u
                                                 <ArrowDownIcon size={16} className="mr-1" />
                                             ) : null}
                                             <span className="text-sm font-semibold">
-                                                {formatAmount(weeklyChange)}
+                                                {formatAmount(weeklyChange, currencySymbol)}
                                             </span>
                                         </div>
                                     </div>
@@ -203,26 +202,29 @@ export default async function Page({ params }: { params: { familyName: string, u
                     <h2 className="text-2xl font-semibold mb-4 text-foreground">Add New Transaction</h2>
                     <TransactionForm 
                         targetUserId={targetUser.user.id}
-                        currencySymbol={currencySymbols[familyMember.family.currency] || familyMember.family.currency}
+                        currencySymbol={currencySymbol}
                     />
                 </CardContent>
             </Card>
 
-            <Card className="shadow-md">
-                <CardContent className="p-6">
+            <Card className="shadow-md w-full">
+                <CardContent className="p-6 overflow-x-auto">
                     <h2 className="text-2xl font-semibold mb-4 text-foreground">Transaction Log</h2>
-                    <Table>
+                    <Table className="w-full">
                         <TableHeader>
                             <TableRow>
                                 <TableHead className="text-foreground/70">Date</TableHead>
                                 <TableHead className="text-foreground/70">Description</TableHead>
                                 <TableHead className="text-foreground/70">Amount</TableHead>
                                 <TableHead className="text-foreground/70">Category</TableHead>
+                                <TableHead className="w-[50px]"></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {transactions.map((transaction) => {
                                 const Icon = categoryIcons[transaction.category]
+                                const canDelete = isParent || (session.user && transaction.ownerId === session.user.id)
+                                
                                 return (
                                     <TableRow key={transaction.id}>
                                         <TableCell>{transaction.date.toISOString().split('T')[0]}</TableCell>
@@ -234,7 +236,7 @@ export default async function Page({ params }: { params: { familyName: string, u
                                                 ) : (
                                                     <MinusIcon size={12} className="mr-1" />
                                                 )}
-                                                {formatAmount(transaction.amount)}
+                                                {formatAmount(transaction.amount, currencySymbol)}
                                             </span>
                                         </TableCell>
                                         <TableCell>
@@ -242,6 +244,18 @@ export default async function Page({ params }: { params: { familyName: string, u
                                                 <Icon size={12} className="mr-1" />
                                                 {transaction.category}
                                             </span>
+                                        </TableCell>
+                                        <TableCell>
+                                            {canDelete && (
+                                                <DeleteTransactionButton
+                                                    transactionId={transaction.id}
+                                                    familyName={params.familyName}
+                                                    userName={params.userName}
+                                                    description={transaction.description}
+                                                    amount={transaction.amount}
+                                                    currencySymbol={currencySymbol}
+                                                />
+                                            )}
                                         </TableCell>
                                     </TableRow>
                                 )

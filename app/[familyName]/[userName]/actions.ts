@@ -56,3 +56,50 @@ export async function addTransaction(prevState: any, formData: FormData) {
         return { message: "Failed to add transaction" }
     }
 }
+
+export async function deleteTransaction(formData: FormData) {
+  const session = await auth()
+  if (!session?.user?.id) throw new Error("Unauthorized")
+
+  const transactionId = formData.get('transactionId') as string
+  const familyName = formData.get('familyName') as string
+  const userName = formData.get('userName') as string
+
+  if (!transactionId || !familyName || !userName) {
+    throw new Error("Missing required fields")
+  }
+
+  // Get the family member to check permissions
+  const familyMember = await prisma.familyMember.findFirst({
+    where: {
+      userId: session.user.id,
+      family: { name: { equals: familyName, mode: 'insensitive' } }
+    },
+    include: {
+      family: true
+    }
+  })
+
+  if (!familyMember) throw new Error("Family member not found")
+
+  // Get the transaction
+  const transaction = await prisma.transaction.findUnique({
+    where: { id: transactionId }
+  })
+
+  if (!transaction) throw new Error("Transaction not found")
+
+  // Check permissions:
+  // Allow if user is a parent OR if user is the transaction owner
+  const canDelete = familyMember.role === "PARENT" || 
+                    transaction.ownerId === session.user.id
+
+  if (!canDelete) throw new Error("Unauthorized to delete this transaction")
+
+  // Delete the transaction
+  await prisma.transaction.delete({
+    where: { id: transactionId }
+  })
+
+  revalidatePath(`/${familyName}/${userName}`)
+}

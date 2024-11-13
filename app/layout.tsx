@@ -36,8 +36,8 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <header className="border-b">
-            <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <header className="border-b w-full">
+            <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
               <Link href="/" className="text-lg font-semibold hover:text-primary transition-colors">
                 Allowance Tracking
               </Link>
@@ -55,7 +55,7 @@ export default async function RootLayout({
               </div>
             </div>
           </header>
-          <main className="container mx-auto px-4 py-8">
+          <main className="max-w-7xl mx-auto px-4 py-8 w-full">
             {children}
           </main>
         </ThemeProvider>
