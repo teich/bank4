@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { HeartIcon, PiggyBankIcon, ShoppingCartIcon } from "lucide-react"
 import { addTransaction } from "./actions"
+import { CATEGORY_ORDER } from '@/lib/constants'
 
 const categoryIcons = {
     GIVING: HeartIcon,
@@ -54,16 +55,13 @@ export function TransactionForm({ targetUserId, currencySymbol }: TransactionFor
                     Category
                 </label>
                 <Select name="category" required>
-                    <SelectTrigger id="category">
-                        <SelectValue placeholder="Select" />
+                    <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                        {Object.entries(categoryIcons).map(([category, Icon]) => (
+                        {CATEGORY_ORDER.map((category) => (
                             <SelectItem key={category} value={category}>
-                                <span className="flex items-center">
-                                    <Icon size={16} className="mr-2" />
-                                    {category}
-                                </span>
+                                {category}
                             </SelectItem>
                         ))}
                     </SelectContent>

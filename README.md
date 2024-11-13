@@ -12,3 +12,5 @@ So... I'm copying `.env.local` to `.env`
 `ln -s .env.local .env`
 
 ## Todo's
+- [ ] add delete for transactions
+- [ ] reorder categories

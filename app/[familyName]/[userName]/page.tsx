@@ -10,17 +10,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowUpIcon, ArrowDownIcon, HeartIcon, PiggyBankIcon, ShoppingCartIcon, PlusIcon, MinusIcon } from "lucide-react"
 import { addTransaction } from './actions'
 import { TransactionForm } from './TransactionForm'
+import { CATEGORY_ORDER } from '@/lib/constants'
 
 const categoryIcons = {
-  GIVING: HeartIcon,
-  SAVING: PiggyBankIcon,
   SPENDING: ShoppingCartIcon,
+  SAVING: PiggyBankIcon,
+  GIVING: HeartIcon,
 }
 
 const categoryColors = {
-  GIVING: 'bg-gradient-to-br from-pink-400 to-purple-500',
-  SAVING: 'bg-gradient-to-br from-green-400 to-emerald-500',
   SPENDING: 'bg-gradient-to-br from-blue-400 to-indigo-500',
+  SAVING: 'bg-gradient-to-br from-green-400 to-emerald-500',
+  GIVING: 'bg-gradient-to-br from-pink-400 to-purple-500',
 }
 
 const currencySymbols: { [key: string]: string } = {
@@ -101,9 +102,9 @@ export default async function Page({ params }: { params: { familyName: string, u
 
     // Create a map of category totals, defaulting to 0 for categories with no transactions
     const categoryTotalMap = {
-        GIVING: 0,
-        SAVING: 0,
         SPENDING: 0,
+        SAVING: 0,
+        GIVING: 0,
         ...Object.fromEntries(categoryTotals.map(ct => [ct.category, ct._sum.amount || 0]))
     }
 
@@ -120,7 +121,7 @@ export default async function Page({ params }: { params: { familyName: string, u
             </h1>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                {(Object.keys(categoryTotalMap) as Array<keyof typeof categoryTotalMap>).map((category) => {
+                {CATEGORY_ORDER.map((category) => {
                     const Icon = categoryIcons[category]
                     return (
                         <Card key={category} className={`overflow-hidden ${categoryColors[category]} text-white shadow-lg transform transition-all duration-300 hover:scale-105`}>
