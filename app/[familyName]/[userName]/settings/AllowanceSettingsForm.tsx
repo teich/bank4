@@ -9,6 +9,7 @@ import { HeartIcon, PiggyBankIcon, ShoppingCartIcon } from "lucide-react"
 import { AllowanceSetting, Category, Currency } from "@prisma/client"
 import { saveAllowanceSettings } from "./actions"
 import { useToast } from "@/hooks/use-toast"
+import { useTheme } from "next-themes"
 
 type CategorySettings = {
   category: Category
@@ -46,24 +47,25 @@ export default function AllowanceSettingsForm({ initialSettings, familyId, userI
         ]
   )
   const { toast } = useToast()
+  const { theme } = useTheme()
 
   const categories = [
     { 
       name: 'SPENDING', 
       icon: ShoppingCartIcon, 
-      color: 'text-purple-500',
+      color: theme === 'dark' ? 'text-purple-400' : 'text-purple-500',
       label: 'Weekly Spending'
     },
     { 
       name: 'SAVING', 
       icon: PiggyBankIcon, 
-      color: 'text-green-500',
+      color: theme === 'dark' ? 'text-green-400' : 'text-green-500',
       label: 'Annual Savings'
     },
     { 
       name: 'GIVING', 
       icon: HeartIcon, 
-      color: 'text-pink-500',
+      color: theme === 'dark' ? 'text-pink-400' : 'text-pink-500',
       label: 'Weekly Giving'
     },
   ]
@@ -122,7 +124,7 @@ export default function AllowanceSettingsForm({ initialSettings, familyId, userI
                   </div>
                   <div className="relative w-32">
                     {!isSaving && (
-                      <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none">
+                      <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground pointer-events-none">
                         $
                       </span>
                     )}
@@ -133,7 +135,7 @@ export default function AllowanceSettingsForm({ initialSettings, familyId, userI
                       className={isSaving ? 'pr-6 text-right' : 'pl-8 text-right'}
                     />
                     {isSaving && (
-                      <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none">
+                      <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground pointer-events-none">
                         %
                       </span>
                     )}
@@ -164,7 +166,15 @@ export default function AllowanceSettingsForm({ initialSettings, familyId, userI
               {initialSettings.map((setting, index) => (
                 <TableRow key={index}>
                   <TableCell>{setting.createdAt.toLocaleDateString()}</TableCell>
-                  <TableCell>{setting.category}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center">
+                      {React.createElement(
+                        categories.find(c => c.name === setting.category)!.icon,
+                        { className: categories.find(c => c.name === setting.category)!.color, size: 16 }
+                      )}
+                      <span className="ml-2">{setting.category}</span>
+                    </div>
+                  </TableCell>
                   <TableCell>
                     {setting.category === "SAVING" 
                       ? `${setting.amount}% per year` 

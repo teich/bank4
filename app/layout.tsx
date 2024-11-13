@@ -6,7 +6,7 @@ import SignIn from "@/components/sign-in"
 import { ThemeToggle } from "@/components/theme-toggle"
 import Link from "next/link"
 import { auth } from "@/auth"
-import { PrismaClient } from "@prisma/client"
+import { prisma } from "@/lib/prisma"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -24,7 +24,6 @@ export default async function RootLayout({
   let userName: string | null = null
 
   if (session?.user?.email) {
-    const prisma = new PrismaClient()
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
       select: { name: true }

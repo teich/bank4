@@ -10,6 +10,7 @@ import { CATEGORY_ORDER } from '@/lib/constants'
 import Link from "next/link"
 import { DeleteTransactionButton } from "./DeleteTransactionButton"
 import { formatAmount } from "@/lib/utils"
+import { useTheme } from "next-themes"
 import type { PageData, CategoryType } from "./types"
 
 const categoryIcons = {
@@ -18,23 +19,32 @@ const categoryIcons = {
     GIVING: HeartIcon,
 }
 
-const categoryColors = {
-    SPENDING: 'bg-gradient-to-br from-blue-400 to-indigo-500',
-    SAVING: 'bg-gradient-to-br from-green-400 to-emerald-500',
-    GIVING: 'bg-gradient-to-br from-pink-400 to-purple-500',
-}
+// Define theme-aware category colors
+const getCategoryColors = (theme: string | undefined) => ({
+    SPENDING: theme === 'dark' 
+        ? 'bg-gradient-to-br from-blue-950 to-indigo-900 hover:from-blue-900 hover:to-indigo-800'
+        : 'bg-gradient-to-br from-blue-400 to-indigo-500 hover:from-blue-500 hover:to-indigo-600',
+    SAVING: theme === 'dark'
+        ? 'bg-gradient-to-br from-green-950 to-emerald-900 hover:from-green-900 hover:to-emerald-800'
+        : 'bg-gradient-to-br from-green-400 to-emerald-500 hover:from-green-500 hover:to-emerald-600',
+    GIVING: theme === 'dark'
+        ? 'bg-gradient-to-br from-pink-950 to-purple-900 hover:from-pink-900 hover:to-purple-800'
+        : 'bg-gradient-to-br from-pink-400 to-purple-500 hover:from-pink-500 hover:to-purple-600',
+})
 
 export function ClientPage({ initialData }: { initialData: PageData }) {
     const [selectedCategory, setSelectedCategory] = useState<CategoryType>('ALL')
+    const { theme } = useTheme()
+    const categoryColors = getCategoryColors(theme)
 
     const filteredTransactions = selectedCategory === 'ALL' 
         ? initialData.transactions
         : initialData.transactions.filter(t => t.category === selectedCategory)
 
     return (
-        <div className="max-w-7xl mx-auto bg-background min-h-screen">
+        <div className="max-w-7xl mx-auto p-4 md:p-8">
             <div className="relative mb-8">
-                <h1 className="text-4xl font-bold text-center text-foreground">
+                <h1 className="text-4xl font-bold text-center">
                     {initialData.isViewingSelf ? "My Money Dashboard" : `${initialData.targetUser.user.name}'s Money Dashboard`}
                 </h1>
                 
@@ -56,15 +66,15 @@ export function ClientPage({ initialData }: { initialData: PageData }) {
                     return (
                         <Card 
                             key={category} 
-                            className={`overflow-hidden ${categoryColors[category]} text-white shadow-lg transform transition-all duration-300 hover:scale-105 cursor-pointer ${
+                            className={`overflow-hidden ${categoryColors[category]} text-foreground dark:text-foreground-dark shadow-lg transform transition-all duration-300 hover:scale-105 cursor-pointer ${
                                 selectedCategory === category ? 'ring-4 ring-primary ring-offset-2' : ''
                             }`}
                             onClick={() => setSelectedCategory(selectedCategory === category ? 'ALL' : category)}
                         >
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between mb-2">
-                                    <div className="bg-white/20 p-3 rounded-full">
-                                        <Icon size={32} className="text-white" />
+                                    <div className="bg-background/20 dark:bg-background/10 p-3 rounded-full">
+                                        <Icon size={32} className="text-foreground dark:text-foreground-dark" />
                                     </div>
                                     <h3 className="text-lg font-bold uppercase tracking-wider">
                                         {category}
@@ -74,7 +84,7 @@ export function ClientPage({ initialData }: { initialData: PageData }) {
                                     <span className="text-5xl font-bold mb-4">
                                         {formatAmount(initialData.categoryTotalMap[category], initialData.currencySymbol)}
                                     </span>
-                                    <div className="flex items-center justify-between pt-3 border-t border-white/20">
+                                    <div className="flex items-center justify-between pt-3 border-t border-foreground/20 dark:border-foreground/10">
                                         <span className="text-sm font-medium">This Week</span>
                                         <div className="flex items-center">
                                             {weeklyChange > 0 ? (
@@ -96,7 +106,7 @@ export function ClientPage({ initialData }: { initialData: PageData }) {
 
             <Card className="shadow-md mb-8">
                 <CardContent className="p-6">
-                    <h2 className="text-2xl font-semibold mb-4 text-foreground">Add New Transaction</h2>
+                    <h2 className="text-2xl font-semibold mb-4">Add New Transaction</h2>
                     <TransactionForm 
                         targetUserId={initialData.targetUser.user.id}
                         currencySymbol={initialData.currencySymbol}
@@ -107,7 +117,7 @@ export function ClientPage({ initialData }: { initialData: PageData }) {
             <Card className="shadow-md w-full">
                 <CardContent className="p-6 overflow-x-auto">
                     <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-2xl font-semibold text-foreground">Transaction Log</h2>
+                        <h2 className="text-2xl font-semibold">Transaction Log</h2>
                         <Select 
                             value={selectedCategory} 
                             onValueChange={(value) => setSelectedCategory(value as CategoryType)}
@@ -131,13 +141,13 @@ export function ClientPage({ initialData }: { initialData: PageData }) {
                             </SelectContent>
                         </Select>
                     </div>
-                    <Table className="w-full">
+                    <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="text-foreground/70">Date</TableHead>
-                                <TableHead className="text-foreground/70">Description</TableHead>
-                                <TableHead className="text-foreground/70">Amount</TableHead>
-                                <TableHead className="text-foreground/70">Category</TableHead>
+                                <TableHead>Date</TableHead>
+                                <TableHead>Description</TableHead>
+                                <TableHead>Amount</TableHead>
+                                <TableHead>Category</TableHead>
                                 <TableHead className="w-[50px]"></TableHead>
                             </TableRow>
                         </TableHeader>
@@ -150,7 +160,7 @@ export function ClientPage({ initialData }: { initialData: PageData }) {
                                     <TableRow key={transaction.id}>
                                         <TableCell>{transaction.date.toISOString().split('T')[0]}</TableCell>
                                         <TableCell>{transaction.description}</TableCell>
-                                        <TableCell className={transaction.amount >= 0 ? 'text-green-600' : 'text-red-600'}>
+                                        <TableCell className={transaction.amount >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
                                             <span className="flex items-center">
                                                 {transaction.amount >= 0 ? (
                                                     <PlusIcon size={12} className="mr-1" />
@@ -161,7 +171,7 @@ export function ClientPage({ initialData }: { initialData: PageData }) {
                                             </span>
                                         </TableCell>
                                         <TableCell>
-                                            <span className={`flex items-center ${categoryColors[transaction.category]} text-white px-2 py-1 rounded-full text-xs`}>
+                                            <span className={`flex items-center ${categoryColors[transaction.category]} px-2 py-1 rounded-full text-xs`}>
                                                 <Icon size={12} className="mr-1" />
                                                 {transaction.category}
                                             </span>
