@@ -12,6 +12,7 @@ import { DeleteTransactionButton } from "./DeleteTransactionButton"
 import { formatAmount } from "@/lib/utils"
 import { useTheme } from "next-themes"
 import type { PageData, CategoryType } from "./types"
+import { Badge } from "@/components/ui/badge"
 
 const categoryIcons = {
     SPENDING: ShoppingCartIcon,
@@ -32,10 +33,30 @@ const getCategoryColors = (theme: string | undefined) => ({
         : 'bg-gradient-to-br from-pink-400 to-purple-500 hover:from-pink-500 hover:to-purple-600',
 })
 
+// Replace the simple categoryVariants with a function that returns theme-aware variants
+const getCategoryBadgeStyles = (theme: string | undefined) => ({
+    SPENDING: {
+        className: theme === 'dark'
+            ? 'bg-blue-950/50 text-blue-200 border-blue-800'
+            : 'bg-blue-100 text-blue-700 border-blue-300'
+    },
+    SAVING: {
+        className: theme === 'dark'
+            ? 'bg-green-950/50 text-green-200 border-green-800'
+            : 'bg-green-100 text-green-700 border-green-300'
+    },
+    GIVING: {
+        className: theme === 'dark'
+            ? 'bg-pink-950/50 text-pink-200 border-pink-800'
+            : 'bg-pink-100 text-pink-700 border-pink-300'
+    }
+})
+
 export function ClientPage({ initialData }: { initialData: PageData }) {
     const [selectedCategory, setSelectedCategory] = useState<CategoryType>('ALL')
     const { theme } = useTheme()
     const categoryColors = getCategoryColors(theme)
+    const categoryBadgeStyles = getCategoryBadgeStyles(theme)
 
     const filteredTransactions = selectedCategory === 'ALL' 
         ? initialData.transactions
@@ -171,10 +192,14 @@ export function ClientPage({ initialData }: { initialData: PageData }) {
                                             </span>
                                         </TableCell>
                                         <TableCell>
-                                            <span className={`flex items-center ${categoryColors[transaction.category]} px-2 py-1 rounded-full text-xs`}>
-                                                <Icon size={12} className="mr-1" />
+                                            <Badge 
+                                                variant="outline"
+                                                className={`px-3 inline-flex justify-center items-center whitespace-nowrap border ${
+                                                    categoryBadgeStyles[transaction.category].className
+                                                }`}
+                                            >
                                                 {transaction.category}
-                                            </span>
+                                            </Badge>
                                         </TableCell>
                                         <TableCell>
                                             {canDelete && (
