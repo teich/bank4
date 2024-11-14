@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog"
 import { useState } from "react"
 import { deleteTransaction } from "./actions"
-import { formatAmount } from "@/lib/utils"
+import { formatCurrency } from "@/lib/utils"
 
 interface DeleteTransactionButtonProps {
     transactionId: string
@@ -52,7 +52,7 @@ export function DeleteTransactionButton({
                         Are you sure you want to delete this transaction?
                         <div className="mt-2 text-foreground">
                             <p><strong>Description:</strong> {description}</p>
-                            <p><strong>Amount:</strong> {formatAmount(amount, currencySymbol)}</p>
+                            <p><strong>Amount:</strong> {formatCurrency(amount, currencySymbol)}</p>
                         </div>
                     </DialogDescription>
                 </DialogHeader>

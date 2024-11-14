@@ -10,8 +10,3 @@ Uses postgres database.
 It's really annoying and I don't know what I'm supposed to do.
 So... I'm copying `.env.local` to `.env` 
 `ln -s .env.local .env`
-
-## Todo's
-- [ ] limit who can signup
-- [ ] fix color change on theme toggle
-- [ ] check if cron is working next week!
