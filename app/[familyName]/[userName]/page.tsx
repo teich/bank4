@@ -3,6 +3,7 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { ClientPage } from "./page.client"
 import type { PageData } from "./types"
+import { formatCurrency } from "@/lib/utils"
 
 async function getPageData({ params }: { params: { familyName: string, userName: string } }): Promise<PageData> {
     const session = await auth()
@@ -76,7 +77,10 @@ async function getPageData({ params }: { params: { familyName: string, userName:
         SPENDING: 0,
         SAVING: 0,
         GIVING: 0,
-        ...Object.fromEntries(categoryTotals.map(ct => [ct.category, ct._sum.amount || 0]))
+        ...Object.fromEntries(categoryTotals.map(ct => [
+            ct.category, 
+            Number(ct._sum.amount) || 0
+        ]))
     }
 
     const oneWeekAgo = new Date()
@@ -100,7 +104,10 @@ async function getPageData({ params }: { params: { familyName: string, userName:
         SPENDING: 0,
         SAVING: 0,
         GIVING: 0,
-        ...Object.fromEntries(weeklyChanges.map(wc => [wc.category, wc._sum.amount || 0]))
+        ...Object.fromEntries(weeklyChanges.map(wc => [
+            wc.category, 
+            Number(wc._sum.amount) || 0
+        ]))
     }
 
     const currencySymbols: { [key: string]: string } = {

@@ -9,7 +9,7 @@ import { TransactionForm } from './TransactionForm'
 import { CATEGORY_ORDER } from '@/lib/constants'
 import Link from "next/link"
 import { DeleteTransactionButton } from "./DeleteTransactionButton"
-import { formatAmount } from "@/lib/utils"
+import { formatAmount, formatCurrency } from "@/lib/utils"
 import { useTheme } from "next-themes"
 import type { PageData, CategoryType } from "./types"
 import { Badge } from "@/components/ui/badge"
@@ -52,6 +52,13 @@ const getCategoryBadgeStyles = (theme: string | undefined) => ({
     }
 })
 
+function getAmountFontSize(amount: number): string {
+    const amountStr = Math.abs(amount).toString()
+    if (amountStr.length > 8) return 'text-3xl'
+    if (amountStr.length > 6) return 'text-4xl'
+    return 'text-5xl'
+}
+
 export function ClientPage({ initialData }: { initialData: PageData }) {
     const [selectedCategory, setSelectedCategory] = useState<CategoryType>('ALL')
     const { theme } = useTheme()
@@ -84,6 +91,7 @@ export function ClientPage({ initialData }: { initialData: PageData }) {
                 {CATEGORY_ORDER.map((category) => {
                     const Icon = categoryIcons[category]
                     const weeklyChange = initialData.weeklyChangeMap[category]
+                    const amount = initialData.categoryTotalMap[category]
                     return (
                         <Card 
                             key={category} 
@@ -102,8 +110,8 @@ export function ClientPage({ initialData }: { initialData: PageData }) {
                                     </h3>
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-5xl font-bold mb-4">
-                                        {formatAmount(initialData.categoryTotalMap[category], initialData.currencySymbol)}
+                                    <span className={`${getAmountFontSize(amount)} font-bold mb-4 truncate`}>
+                                        {formatCurrency(amount, initialData.currencySymbol)}
                                     </span>
                                     <div className="flex items-center justify-between pt-3 border-t border-foreground/20 dark:border-foreground/10">
                                         <span className="text-sm font-medium">This Week</span>
@@ -114,7 +122,7 @@ export function ClientPage({ initialData }: { initialData: PageData }) {
                                                 <ArrowDownIcon size={16} className="mr-1" />
                                             ) : null}
                                             <span className="text-sm font-semibold">
-                                                {formatAmount(weeklyChange, initialData.currencySymbol)}
+                                                {formatCurrency(weeklyChange, initialData.currencySymbol)}
                                             </span>
                                         </div>
                                     </div>
@@ -141,7 +149,7 @@ export function ClientPage({ initialData }: { initialData: PageData }) {
                         <h2 className="text-2xl font-semibold">Transaction Log</h2>
                         <Select 
                             value={selectedCategory} 
-                            onValueChange={(value) => setSelectedCategory(value as CategoryType)}
+                            onValueChange={(value: string) => setSelectedCategory(value as CategoryType)}
                         >
                             <SelectTrigger className="w-[180px]">
                                 <SelectValue placeholder="Filter by category" />
@@ -188,12 +196,11 @@ export function ClientPage({ initialData }: { initialData: PageData }) {
                                                 ) : (
                                                     <MinusIcon size={12} className="mr-1" />
                                                 )}
-                                                {formatAmount(Math.abs(transaction.amount), initialData.currencySymbol)}
+                                                {formatCurrency(Math.abs(transaction.amount), initialData.currencySymbol)}
                                             </span>
                                         </TableCell>
                                         <TableCell>
                                             <Badge 
-                                                variant="outline"
                                                 className={`px-3 inline-flex justify-center items-center whitespace-nowrap border ${
                                                     categoryBadgeStyles[transaction.category].className
                                                 }`}

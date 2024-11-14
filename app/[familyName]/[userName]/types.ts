@@ -32,4 +32,4 @@ export interface PageData {
     currencySymbol: string
 }
 
-export type CategoryType = 'ALL' | 'SPENDING' | 'SAVING' | 'GIVING' 
+export type CategoryType = 'SPENDING' | 'SAVING' | 'GIVING' | 'ALL' 
