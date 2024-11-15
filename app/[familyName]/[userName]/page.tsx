@@ -58,8 +58,7 @@ async function getPageData({ params }: { params: { familyName: string, userName:
             familyId: familyMember.family.id,
             ownerId: targetUser.user.id
         },
-        orderBy: { date: 'desc' },
-        take: 10
+        orderBy: { date: 'desc' }
     })
 
     const categoryTotals = await prisma.transaction.groupBy({
