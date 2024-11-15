@@ -70,6 +70,11 @@ export function ClientPage({ initialData }: { initialData: PageData }) {
         ? initialData.transactions
         : initialData.transactions.filter(t => t.category === selectedCategory)
 
+    console.log('Passing to TransactionTable:', {
+        isParent: initialData.isParent,
+        currentUserId: initialData.session.user.id
+    })
+
     return (
         <div className="max-w-7xl mx-auto p-4 md:p-8">
             <div className="relative mb-8">
@@ -149,6 +154,8 @@ export function ClientPage({ initialData }: { initialData: PageData }) {
                 <TransactionTable 
                     data={initialData.transactions} 
                     currencySymbol={initialData.currencySymbol}
+                    isParent={initialData.isParent}
+                    currentUserId={initialData.session.user.id}
                 />
             </div>
         </div>

@@ -26,6 +26,8 @@ import { Input } from "@/components/ui/input"
 import { Transaction } from "@prisma/client"
 import { formatCurrency } from "@/lib/utils"
 import { useTheme } from "next-themes"
+import { Trash2Icon } from "lucide-react"
+import { DeleteTransactionButton } from "@/components/delete-transaction-button"
 
 const getCategoryBadgeStyles = (theme: string | undefined) => ({
   SPENDING: {
@@ -45,18 +47,27 @@ const getCategoryBadgeStyles = (theme: string | undefined) => ({
   }
 })
 
-interface TransactionTableProps {
-  data: Transaction[]
-  currencySymbol: string
+interface TransactionWithCreator extends Transaction {
+  createdBy: {
+    id: string
+    name: string | null
+  }
 }
 
-export function TransactionTable({ data, currencySymbol }: TransactionTableProps) {
+interface TransactionTableProps {
+  data: TransactionWithCreator[]
+  currencySymbol: string
+  isParent: boolean
+  currentUserId: string
+}
+
+export function TransactionTable({ data, currencySymbol, isParent, currentUserId }: TransactionTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const { theme } = useTheme()
   const categoryBadgeStyles = getCategoryBadgeStyles(theme)
 
-  const columns: ColumnDef<Transaction>[] = [
+  const columns: ColumnDef<TransactionWithCreator>[] = [
     {
       accessorKey: "date",
       header: "Date",
@@ -94,6 +105,34 @@ export function TransactionTable({ data, currencySymbol }: TransactionTableProps
             {formatCurrency(amount, currencySymbol)}
           </span>
         )
+      },
+    },
+    {
+      accessorKey: "createdBy.name",
+      header: "Created By",
+      cell: ({ row }) => {
+        const isCurrentUser = row.original.createdBy.id === currentUserId
+        return (
+          <span className={isCurrentUser ? "font-medium" : "text-muted-foreground"}>
+            {isCurrentUser ? "Me" : row.original.createdBy.name}
+          </span>
+        )
+      }
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => {
+        const isCreator = row.original.createdById === currentUserId
+        const canDelete = isParent || isCreator
+        
+        return canDelete ? (
+          <div className="flex justify-end">
+            <DeleteTransactionButton 
+              transactionId={row.original.id}
+              icon={<Trash2Icon className="h-4 w-4" />}
+            />
+          </div>
+        ) : null
       },
     },
   ]

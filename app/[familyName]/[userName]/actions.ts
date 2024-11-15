@@ -11,19 +11,26 @@ export async function addTransaction(prevState: any, formData: FormData) {
         return { message: "Not authenticated" }
     }
 
-    const amount = parseFloat(formData.get("amount") as string) * 100 // Convert to cents
+    const amount = parseFloat(formData.get("amount") as string) * 100
     const description = formData.get("description") as string
-    const category = formData.get("category") as Category // Type assertion to Category enum
+    const category = formData.get("category") as Category
     const targetUserId = formData.get("targetUserId") as string
 
     try {
-        // First, find the family ID for the target user
+        // First, find the family member to check permissions
         const familyMember = await prisma.familyMember.findFirst({
             where: {
-                userId: targetUserId
+                userId: session.user.id,
+                family: {
+                    members: {
+                        some: {
+                            userId: targetUserId
+                        }
+                    }
+                }
             },
-            select: {
-                familyId: true
+            include: {
+                family: true
             }
         })
 
@@ -44,7 +51,7 @@ export async function addTransaction(prevState: any, formData: FormData) {
                     connect: { id: session.user.id }
                 },
                 family: {
-                    connect: { id: familyMember.familyId }
+                    connect: { id: familyMember.family.id }
                 }
             }
         })

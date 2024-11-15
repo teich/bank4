@@ -58,6 +58,14 @@ async function getPageData({ params }: { params: { familyName: string, userName:
             familyId: familyMember.family.id,
             ownerId: targetUser.user.id
         },
+        include: {
+            createdBy: {
+                select: {
+                    name: true,
+                    id: true
+                }
+            }
+        },
         orderBy: { date: 'desc' }
     })
 
