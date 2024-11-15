@@ -9,7 +9,7 @@ import { TransactionForm } from './TransactionForm'
 import { CATEGORY_ORDER } from '@/lib/constants'
 import Link from "next/link"
 import { DeleteTransactionButton } from "./DeleteTransactionButton"
-import { formatAmount, formatCurrency } from "@/lib/utils"
+import { formatCurrency } from "@/lib/utils"
 import { useTheme } from "next-themes"
 import type { PageData, CategoryType } from "./types"
 import { Badge } from "@/components/ui/badge"
