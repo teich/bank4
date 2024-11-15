@@ -13,6 +13,7 @@ import { formatCurrency } from "@/lib/utils"
 import { useTheme } from "next-themes"
 import type { PageData, CategoryType } from "./types"
 import { Badge } from "@/components/ui/badge"
+import { TransactionTable } from "@/components/transactions/transaction-table"
 
 const categoryIcons = {
     SPENDING: ShoppingCartIcon,
@@ -143,90 +144,13 @@ export function ClientPage({ initialData }: { initialData: PageData }) {
                 </CardContent>
             </Card>
 
-            <Card className="shadow-md w-full">
-                <CardContent className="p-6 overflow-x-auto">
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-2xl font-semibold">Transaction Log</h2>
-                        <Select 
-                            value={selectedCategory} 
-                            onValueChange={(value: string) => setSelectedCategory(value as CategoryType)}
-                        >
-                            <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder="Filter by category" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="ALL">All Categories</SelectItem>
-                                {CATEGORY_ORDER.map((category) => (
-                                    <SelectItem key={category} value={category}>
-                                        <div className="flex items-center">
-                                            {React.createElement(categoryIcons[category], { 
-                                                size: 16, 
-                                                className: "mr-2" 
-                                            })}
-                                            {category}
-                                        </div>
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Date</TableHead>
-                                <TableHead>Description</TableHead>
-                                <TableHead>Amount</TableHead>
-                                <TableHead>Category</TableHead>
-                                <TableHead className="w-[50px]"></TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {filteredTransactions.map((transaction) => {
-                                const Icon = categoryIcons[transaction.category]
-                                const canDelete = initialData.isParent || transaction.ownerId === initialData.session.user.id
-                                
-                                return (
-                                    <TableRow key={transaction.id}>
-                                        <TableCell>{transaction.date.toISOString().split('T')[0]}</TableCell>
-                                        <TableCell>{transaction.description}</TableCell>
-                                        <TableCell className={transaction.amount >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
-                                            <span className="flex items-center">
-                                                {transaction.amount >= 0 ? (
-                                                    <PlusIcon size={12} className="mr-1" />
-                                                ) : (
-                                                    <MinusIcon size={12} className="mr-1" />
-                                                )}
-                                                {formatCurrency(Math.abs(transaction.amount), initialData.currencySymbol)}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge 
-                                                className={`px-3 inline-flex justify-center items-center whitespace-nowrap border ${
-                                                    categoryBadgeStyles[transaction.category].className
-                                                }`}
-                                            >
-                                                {transaction.category}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            {canDelete && (
-                                                <DeleteTransactionButton
-                                                    transactionId={transaction.id}
-                                                    familyName={initialData.params.familyName}
-                                                    userName={initialData.params.userName}
-                                                    description={transaction.description}
-                                                    amount={transaction.amount}
-                                                    currencySymbol={initialData.currencySymbol}
-                                                />
-                                            )}
-                                        </TableCell>
-                                    </TableRow>
-                                )
-                            })}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
+            <div className="mt-6">
+                <h2 className="text-2xl font-bold mb-4">Transactions</h2>
+                <TransactionTable 
+                    data={initialData.transactions} 
+                    currencySymbol={initialData.currencySymbol}
+                />
+            </div>
         </div>
     )
 } 
