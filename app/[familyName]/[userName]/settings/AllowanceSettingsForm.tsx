@@ -10,7 +10,7 @@ import { AllowanceSetting, Category, Currency } from "@prisma/client"
 import { saveAllowanceSettings } from "./actions"
 import { useToast } from "@/hooks/use-toast"
 import { useTheme } from "next-themes"
-import { AllowanceTestButton } from "./AllowanceTestButton"
+import { DevelopmentTools } from "./DevelopmentTools"
 
 type CategorySettings = {
   category: Category
@@ -106,47 +106,49 @@ export default function AllowanceSettingsForm({ initialSettings, familyId, userI
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Allowance Settings</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {settings.map((setting, index) => {
-              const category = categories.find(c => c.name === setting.category)!
-              const isSaving = setting.category === "SAVING"
-              return (
-                <div key={setting.category} className="flex items-center space-x-4">
-                  <div className="w-48 flex items-center">
-                    {React.createElement(category.icon, { className: `mr-2 ${category.color}`, size: 24 })}
-                    <span className="font-medium whitespace-nowrap">{category.label}</span>
+    <div>
+      <form onSubmit={handleSubmit}>
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Allowance Settings</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {settings.map((setting, index) => {
+                const category = categories.find(c => c.name === setting.category)!
+                const isSaving = setting.category === "SAVING"
+                return (
+                  <div key={setting.category} className="flex items-center space-x-4">
+                    <div className="w-48 flex items-center">
+                      {React.createElement(category.icon, { className: `mr-2 ${category.color}`, size: 24 })}
+                      <span className="font-medium whitespace-nowrap">{category.label}</span>
+                    </div>
+                    <div className="relative w-32">
+                      {!isSaving && (
+                        <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground pointer-events-none">
+                          $
+                        </span>
+                      )}
+                      <Input
+                        type="number"
+                        value={setting.amount}
+                        onChange={(e) => handleAmountChange(index, parseFloat(e.target.value))}
+                        className={isSaving ? 'pr-6 text-right' : 'pl-8 text-right'}
+                      />
+                      {isSaving && (
+                        <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground pointer-events-none">
+                          %
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div className="relative w-32">
-                    {!isSaving && (
-                      <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground pointer-events-none">
-                        $
-                      </span>
-                    )}
-                    <Input
-                      type="number"
-                      value={setting.amount}
-                      onChange={(e) => handleAmountChange(index, parseFloat(e.target.value))}
-                      className={isSaving ? 'pr-6 text-right' : 'pl-8 text-right'}
-                    />
-                    {isSaving && (
-                      <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground pointer-events-none">
-                        %
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )
-            })}
-            <Button type="submit" className="w-full mt-4">Save Changes</Button>
-          </div>
-        </CardContent>
-      </Card>
+                )
+              })}
+              <Button type="submit" className="w-full mt-4">Save Changes</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </form>
       
       <Card>
         <CardHeader>
@@ -188,7 +190,9 @@ export default function AllowanceSettingsForm({ initialSettings, familyId, userI
         </CardContent>
       </Card>
       
-      <AllowanceTestButton userId={userId} />
-    </form>
+      {process.env.NODE_ENV === "development" && (
+        <DevelopmentTools userId={userId} />
+      )}
+    </div>
   )
 }

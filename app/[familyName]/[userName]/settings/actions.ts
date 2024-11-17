@@ -66,3 +66,55 @@ export async function saveAllowanceSettings(data: z.infer<typeof SaveAllowanceSe
   revalidatePath(`/${familyId}/${userId}/settings`)
   return createdSettings
 }
+
+const DeleteTransactionsSchema = z.object({
+  userId: z.string()
+})
+
+export async function deleteAllTransactions({ userId }: { userId: string }) {
+  try {
+    const session = await auth()
+    if (!session?.user?.email) throw new Error("Not authenticated")
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      include: { familyMembers: true }
+    })
+
+    if (!user?.familyMembers.some(member => member.role === "PARENT"))
+      throw new Error("Unauthorized")
+
+    await prisma.transaction.deleteMany({
+      where: { ownerId: userId }
+    })
+
+    revalidatePath(`/[familyName]/[userName]`)
+  } catch (error) {
+    console.error("Failed to delete transactions:", error)
+    throw error
+  }
+}
+
+export async function deleteAllAllowanceSettings({ userId }: { userId: string }) {
+  try {
+    const session = await auth()
+    if (!session?.user?.email) throw new Error("Not authenticated")
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      include: { familyMembers: true }
+    })
+
+    if (!user?.familyMembers.some(member => member.role === "PARENT"))
+      throw new Error("Unauthorized")
+
+    await prisma.allowanceSetting.deleteMany({
+      where: { userId }
+    })
+
+    revalidatePath(`/[familyName]/[userName]`)
+  } catch (error) {
+    console.error("Failed to delete allowance settings:", error)
+    throw error
+  }
+}
