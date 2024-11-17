@@ -8,6 +8,7 @@ import InviteMemberForm from '@/app/[familyName]/settings/InviteMemberForm';
 import FamilyInvites from '@/app/[familyName]/settings/FamilyInvites';
 import FamilyMembersList from '@/app/[familyName]/settings/FamilyMembersList';
 import Link from 'next/link';
+import { ContextNav } from "@/components/navigation/context-nav"
 
 export default async function Page({ params }: { params: { familyName: string } }) {
   const session = await auth();
@@ -40,8 +41,12 @@ export default async function Page({ params }: { params: { familyName: string } 
   const isParent = familyMember?.role === 'PARENT';
 
   return (
-    <div className="container mx-auto p-6 space-y-8">
-      <h1 className="text-3xl font-bold">Family Settings: {params.familyName}</h1>
+    <div className="container mx-auto p-6">
+      <ContextNav 
+        familyName={params.familyName}
+        currentPage="settings"
+        isParent={isParent}
+      />
       
       <Card className="overflow-hidden">
         <CardHeader className="bg-primary/10">

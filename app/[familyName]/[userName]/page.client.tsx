@@ -78,19 +78,9 @@ export function ClientPage({ initialData }: { initialData: PageData }) {
     return (
         <div className="max-w-7xl mx-auto p-4 md:p-8">
             <div className="relative mb-8">
-                <h1 className="text-4xl font-bold text-center">
-                    {initialData.isViewingSelf ? "My Money Dashboard" : `${initialData.targetUser.user.name}'s Money Dashboard`}
+                <h1 className="text-3xl font-bold mb-6">
+                    {initialData.targetUser.user.name}'s Money Dashboard
                 </h1>
-                
-                {initialData.isParent && (
-                    <Link
-                        href={`/${initialData.params.familyName}/${initialData.params.userName}/settings`}
-                        className="absolute right-0 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-accent transition-colors duration-200 group"
-                        title="Settings"
-                    >
-                        <Settings className="w-5 h-5 text-muted-foreground group-hover:text-foreground" />
-                    </Link>
-                )}
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

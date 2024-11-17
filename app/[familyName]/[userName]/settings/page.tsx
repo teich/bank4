@@ -3,6 +3,7 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import AllowanceSettingsForm from "./AllowanceSettingsForm"
 import Link from "next/link"
+import { ContextNav } from "@/components/navigation/context-nav"
 
 async function getFamily(familyName: string) {
   return await prisma.family.findUnique({
@@ -56,18 +57,13 @@ export default async function Page({ params }: { params: { familyName: string, u
   const allowanceSettings = await getAllowanceSettings(family.id, user.id)
 
   return (
-    <div className="container mx-auto p-4 min-h-screen">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">
-          Allowance Settings for{" "}
-          <Link 
-            href={`/${params.familyName}/${params.userName}`}
-            className="hover:text-primary hover:underline"
-          >
-            {user.name || user.username}
-          </Link>
-        </h1>
-      </div>
+    <div className="container mx-auto p-6">
+      <ContextNav 
+        familyName={params.familyName}
+        userName={params.userName}
+        currentPage="settings"
+        isParent={isParentInFamily}
+      />
       <AllowanceSettingsForm
         initialSettings={allowanceSettings.map(setting => ({
           ...setting,

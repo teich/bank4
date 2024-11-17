@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { ClientPage } from "./page.client"
 import type { PageData } from "./types"
 import { formatCurrency } from "@/lib/utils"
+import { ContextNav } from "@/components/navigation/context-nav"
 
 async function getPageData({ params }: { params: { familyName: string, userName: string } }): Promise<PageData> {
     const session = await auth()
@@ -141,5 +142,15 @@ async function getPageData({ params }: { params: { familyName: string, userName:
 
 export default async function Page({ params }: { params: { familyName: string, userName: string } }) {
     const initialData = await getPageData({ params })
-    return <ClientPage initialData={initialData} />
+    return (
+      <div className="container mx-auto p-6">
+        <ContextNav 
+          familyName={params.familyName}
+          userName={params.userName}
+          currentPage="dashboard"
+          isParent={initialData.isParent}
+        />
+        <ClientPage initialData={initialData} />
+      </div>
+    )
 }
