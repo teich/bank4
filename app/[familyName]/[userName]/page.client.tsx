@@ -79,7 +79,7 @@ export function ClientPage({ initialData }: { initialData: PageData }) {
         <div className="max-w-7xl mx-auto p-4 md:p-8">
             <div className="relative mb-8">
                 <h1 className="text-3xl font-bold mb-6">
-                    {initialData.targetUser.user.name}'s Money Dashboard
+                    {initialData.targetUser.user.name}&apos;s Money Dashboard
                 </h1>
             </div>
             
