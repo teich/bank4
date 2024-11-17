@@ -15,4 +15,4 @@ jobs:
           fetch-depth: 0
       - uses: ./.github/actions/setup
 
-      - run: pnpm turbo run lint
+      - run: pnpm run lint
