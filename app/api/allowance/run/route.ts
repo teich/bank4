@@ -63,7 +63,7 @@ async function calculateWeeklyAllowance({
   }
 }
 
-export async function POST() {
+export async function GET() {
   try {
     // Verify authorization in production only
     if (process.env.NODE_ENV === "production") {
